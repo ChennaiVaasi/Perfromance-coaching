@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Access</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <main class="shell detail-shell">
+      <section class="panel">
+        <p class="panel-label">Admin Access</p>
+        <h1>Coach admin login</h1>
+        <p class="strapline">Use the fixed admin credentials to enter the coach workspace, then assign usernames and passwords for students.</p>
+        <form id="admin-login-form" class="upload-form auth-form">
+          <input id="admin-username" type="text" placeholder="Coach username" value="coach" />
+          <input id="admin-password" type="password" placeholder="Admin password" value="6464" />
+          <button type="submit">Login as Admin</button>
+        </form>
+        <p id="admin-status" class="status-text"></p>
+      </section>
+
+      <section class="panel" id="admin-panel" hidden>
+        <div class="top-nav">
+          <div>
+            <p class="panel-label">Credential Manager</p>
+            <strong>Student access</strong>
+          </div>
+          <div class="nav-actions">
+            <a class="nav-link" href="/">Open Coach Dashboard</a>
+            <button id="admin-logout" class="ghost-button" type="button">Logout</button>
+          </div>
+        </div>
+        <div class="detail-grid">
+          <article class="panel">
+            <p class="panel-label">Create Or Update User</p>
+            <form id="student-credential-form" class="upload-form auth-form">
+              <input id="credential-student-name" type="text" placeholder="Student name (matches report user name)" />
+              <input id="credential-username" type="text" placeholder="Student login username" />
+              <input id="credential-password" type="text" placeholder="Student login password" />
+              <button type="submit">Save Student Login</button>
+            </form>
+            <p id="credential-status" class="status-text"></p>
+          </article>
+
+          <article class="panel">
+            <p class="panel-label">Current Users</p>
+            <div class="report-list" id="admin-user-list"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+    <script src="./auth.js"></script>
+    <script src="./admin.js"></script>
+  </body>
+</html>

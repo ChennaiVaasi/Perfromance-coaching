@@ -9,74 +9,184 @@
   <body>
     <div class="noise"></div>
     <main class="shell">
-      <section class="hero panel">
+      <nav class="top-nav panel">
         <div>
-          <p class="eyebrow">Performance Coaching</p>
-          <h1>Upload a report. Detect the persona. Coach from evidence.</h1>
-          <p class="hero-copy">
-            This app takes a user's PDF report, extracts the report text, evaluates the likely persona,
-            and gives the coach a shared view across all uploaded users.
+          <p class="panel-label" id="admin-hotspot">View Mode</p>
+          <strong>Coach Page</strong>
+        </div>
+        <div class="nav-actions">
+          <a class="nav-link" href="/login.html">Login Page</a>
+          <button id="admin-logout" class="ghost-button" type="button">Logout</button>
+        </div>
+      </nav>
+
+      <section class="panel hidden-admin-panel" id="hidden-admin-panel" hidden>
+        <div class="top-nav">
+          <div>
+            <p class="panel-label">Admin Access</p>
+            <strong>Hidden coach controls</strong>
+          </div>
+          <button id="admin-panel-close" class="ghost-button" type="button">Close</button>
+        </div>
+        <div class="detail-grid">
+          <article class="panel">
+            <p class="panel-label">Admin Login</p>
+            <form id="admin-login-form" class="upload-form auth-form">
+              <input id="admin-username" type="text" placeholder="Coach username" value="coach" />
+              <input id="admin-password" type="password" placeholder="Admin password" value="6464" />
+              <button type="submit">Unlock Admin</button>
+            </form>
+            <p id="admin-status" class="status-text"></p>
+          </article>
+
+          <article class="panel" id="admin-credentials-panel" hidden>
+            <p class="panel-label">Student Credentials</p>
+            <form id="student-credential-form" class="upload-form auth-form">
+              <input id="credential-student-name" type="text" placeholder="Student name (matches report user name)" />
+              <input id="credential-username" type="text" placeholder="Student login username" />
+              <input id="credential-password" type="text" placeholder="Student login password" />
+              <button type="submit">Save Student Login</button>
+            </form>
+            <p id="credential-status" class="status-text"></p>
+            <div class="report-list admin-user-list" id="admin-user-list"></div>
+          </article>
+        </div>
+      </section>
+      <section class="masthead">
+        <div class="masthead-copy">
+          <p class="kicker">Coach Workspace</p>
+          <h1 id="hero-title">Review every student, then drill into evidence.</h1>
+          <p class="strapline" id="hero-copy">
+            Upload reports, compare students, branch by activity, and open evidence pages without crowding the main dashboard.
           </p>
+        </div>
+
+        <aside class="upload-dock panel">
+          <p class="panel-label">Upload Reports</p>
+          <form id="upload-form" class="upload-form">
+            <input id="user-name" name="userName" type="text" placeholder="User name" required />
+            <label class="file-picker">
+              <span>Choose PDFs</span>
+              <input id="report-file" name="reports" type="file" accept="application/pdf" multiple />
+            </label>
+            <label class="file-picker">
+              <span>Choose Folder</span>
+              <input id="report-folder" name="reportFolder" type="file" webkitdirectory directory multiple />
+            </label>
+            <button type="submit">Upload Batch</button>
+          </form>
+          <p id="form-status" class="status-text"></p>
+        </aside>
+      </section>
+
+      <section class="hero-orbit">
+        <div class="pulse-orb">
+          <div class="orb-ring orb-ring-a"></div>
+          <div class="orb-ring orb-ring-b"></div>
+          <div class="orb-core">
+            <span id="signature-label">Time Signature</span>
+            <strong id="signature-headline">Upload a report</strong>
+            <p id="signature-support">The app will detect the strongest time persona and peak flow duration.</p>
+          </div>
         </div>
       </section>
 
-      <section class="layout">
-        <article class="panel intake-panel">
-          <p class="eyebrow">Intake</p>
-          <h2>Add a user report</h2>
-          <form id="upload-form" class="upload-form">
-            <label>
-              User name
-              <input id="user-name" name="userName" type="text" placeholder="K, Dan, etc." required />
-            </label>
-            <label>
-              Report PDF
-              <input id="report-file" name="report" type="file" accept="application/pdf" required />
-            </label>
-            <button type="submit">Evaluate Persona</button>
-          </form>
-          <p id="form-status" class="status-text"></p>
-        </article>
-
-        <article class="panel coach-panel">
-          <p class="eyebrow">Coach Side</p>
-          <h2 id="coach-title">Choose a user to inspect</h2>
-          <p id="coach-summary" class="coach-summary">
-            Once a PDF is uploaded, the coach side will show the detected persona, the performance engine,
-            and the supporting evidence from the report.
-          </p>
-          <div class="coach-grid">
-            <section class="coach-block">
-              <h3>Detected Persona</h3>
-              <div id="persona-card" class="persona-card placeholder">No report selected yet.</div>
-            </section>
-            <section class="coach-block">
-              <h3>Performance Engine</h3>
-              <div id="engine-grid" class="engine-grid"></div>
-            </section>
-            <section class="coach-block">
-              <h3>Modifiers</h3>
-              <div id="modifier-grid" class="modifier-grid"></div>
-            </section>
-            <section class="coach-block">
-              <h3>Coaching Plan</h3>
-              <ul id="coaching-steps" class="coaching-steps"></ul>
-            </section>
+      <section class="observatory-grid">
+        <aside class="left-rail panel">
+          <p class="panel-label">Time Ledger</p>
+          <div class="summary-stack" id="summary-stack"></div>
+          <div class="thesis-block">
+            <p class="panel-label">Current Read</p>
+            <h2 id="coach-title">Choose a report to inspect</h2>
+            <p id="coach-summary">
+              The coach side will show the strongest persona, its time-based expression, and the flow-duration signal from the chart.
+            </p>
+            <p class="micro-meta" id="coach-session-count"></p>
           </div>
-        </article>
+        </aside>
+
+        <section class="center-stage">
+          <article class="panel observatory-panel">
+            <div class="section-header">
+              <div>
+                <p class="panel-label">Persona Signature</p>
+                <h2>Detected from the report</h2>
+              </div>
+            </div>
+            <div class="persona-signature" id="persona-card">
+              <div class="loading">No report selected yet.</div>
+            </div>
+          </article>
+
+          <article class="panel observatory-panel">
+            <div class="section-header">
+              <div>
+                <p class="panel-label">Peak Flow</p>
+                <h2>Duration and engine</h2>
+              </div>
+            </div>
+            <div class="mode-theatre" id="peak-flow-panel"></div>
+            <div class="engine-grid" id="engine-grid"></div>
+          </article>
+
+          <article class="panel observatory-panel">
+            <div class="section-header">
+              <div>
+                <p class="panel-label">Chart Read</p>
+                <h2>Sessions behind the signal</h2>
+              </div>
+            </div>
+            <div class="chart-session-grid" id="chart-session-grid"></div>
+          </article>
+
+          <article class="panel observatory-panel">
+            <div class="section-header">
+              <div>
+                <p class="panel-label">Activity Branches</p>
+                <h2>Games, puzzles, study and more</h2>
+              </div>
+            </div>
+            <div class="chart-session-grid" id="activity-branch-grid"></div>
+          </article>
+        </section>
+
+        <aside class="right-rail">
+          <article class="panel coach-panel">
+            <p class="panel-label">Coach Side</p>
+            <h2 id="coach-plan-title">How to coach this user</h2>
+            <p id="coach-plan-body">Upload or select a report to see the coaching plan.</p>
+            <div class="coach-steps-wrap">
+              <p class="panel-label">Next Steps</p>
+              <ul class="coach-steps" id="coaching-steps"></ul>
+            </div>
+          </article>
+
+          <article class="panel">
+            <p class="panel-label">Modifiers</p>
+            <h2>What strengthens the persona</h2>
+            <div class="modifier-grid" id="modifier-grid"></div>
+          </article>
+
+          <article class="panel">
+            <p class="panel-label">Focus And Wellness</p>
+            <h2>What the user spent time on</h2>
+            <p id="focus-wellness-summary"></p>
+            <div class="modifier-grid" id="time-spent-grid"></div>
+          </article>
+        </aside>
       </section>
 
-      <section class="panel">
-        <div class="section-heading">
+      <section class="reel panel reports-panel">
+        <div class="section-header">
           <div>
-            <p class="eyebrow">All Users</p>
-            <h2>Coach dashboard</h2>
+            <p class="panel-label">Coach Dashboard</p>
+            <h2>All uploaded users</h2>
           </div>
         </div>
         <div id="report-list" class="report-list"></div>
       </section>
     </main>
-
+    <script src="./auth.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

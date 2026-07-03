@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Performance Coaching Login</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <main class="shell detail-shell">
+      <section class="panel login-panel">
+        <p class="panel-label">Common Login</p>
+        <h1>Sign in to continue</h1>
+        <p class="strapline">Use `coach / 6464` for the coach dashboard. Student usernames and passwords will open the student page automatically.</p>
+        <form id="common-login-form" class="upload-form auth-form">
+          <input id="common-username" type="text" placeholder="Username" />
+          <input id="common-password" type="password" placeholder="Password" />
+          <button type="submit">Sign In</button>
+        </form>
+        <p id="common-login-status" class="status-text"></p>
+      </section>
+    </main>
+    <script src="./auth.js"></script>
+    <script src="./login.js"></script>
+  </body>
+</html>

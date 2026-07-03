@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student View</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <main class="shell">
+      <nav class="top-nav panel">
+        <div>
+          <p class="panel-label">View Mode</p>
+          <strong>Student Page</strong>
+        </div>
+        <div class="nav-actions">
+          <a class="nav-link" href="/login.html">Login Page</a>
+          <button id="student-logout" class="ghost-button" type="button">Logout</button>
+        </div>
+      </nav>
+
+      <section class="masthead" id="student-app-shell" hidden>
+        <div class="masthead-copy">
+          <p class="kicker">Student View</p>
+          <h1 id="student-hero-title">Your report, your patterns, your next step.</h1>
+          <p class="strapline" id="student-hero-copy">
+            This page only loads one student's reports so the experience stays focused on personal patterns, evidence, and growth.
+          </p>
+        </div>
+
+        <aside class="upload-dock panel">
+          <p class="panel-label">Student Access</p>
+          <p id="student-status" class="status-text"></p>
+        </aside>
+      </section>
+
+      <section class="hero-orbit">
+        <div class="pulse-orb">
+          <div class="orb-ring orb-ring-a"></div>
+          <div class="orb-ring orb-ring-b"></div>
+          <div class="orb-core">
+            <span id="student-signature-label">Student Persona</span>
+            <strong id="student-signature-headline">Choose a student</strong>
+            <p id="student-signature-support">Only this student's reports will be shown here.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="observatory-grid">
+        <aside class="left-rail panel">
+          <p class="panel-label">Student Ledger</p>
+          <div class="summary-stack" id="student-summary-stack"></div>
+          <div class="thesis-block">
+            <p class="panel-label">Current Read</p>
+            <h2 id="student-title">Choose a student</h2>
+            <p id="student-summary">This page stays scoped to one student's reports only.</p>
+            <p class="micro-meta" id="student-session-count"></p>
+          </div>
+        </aside>
+
+        <section class="center-stage">
+          <article class="panel observatory-panel">
+            <div class="section-header">
+              <div>
+                <p class="panel-label">Your Persona</p>
+                <h2>What the report suggests</h2>
+              </div>
+            </div>
+            <div class="persona-signature" id="student-persona-card">
+              <div class="loading">No student selected yet.</div>
+            </div>
+          </article>
+
+          <article class="panel observatory-panel">
+            <div class="section-header">
+              <div>
+                <p class="panel-label">Your Engine</p>
+                <h2>Metrics and peak flow</h2>
+              </div>
+            </div>
+            <div class="mode-theatre" id="student-peak-flow-panel"></div>
+            <div class="engine-grid" id="student-engine-grid"></div>
+          </article>
+
+          <article class="panel observatory-panel">
+            <div class="section-header">
+              <div>
+                <p class="panel-label">Your Activities</p>
+                <h2>Which work suits you best</h2>
+              </div>
+            </div>
+            <div class="chart-session-grid" id="student-activity-grid"></div>
+          </article>
+        </section>
+
+        <aside class="right-rail">
+          <article class="panel">
+            <p class="panel-label">Student Plan</p>
+            <h2 id="student-plan-title">What to work on next</h2>
+            <p id="student-plan-body">Choose a student to see the current coaching read.</p>
+            <div class="coach-steps-wrap">
+              <p class="panel-label">Next Steps</p>
+              <ul class="coach-steps" id="student-steps"></ul>
+            </div>
+          </article>
+
+          <article class="panel">
+            <p class="panel-label">Your Reports</p>
+            <h2>Only your uploads</h2>
+            <div id="student-report-list" class="report-list"></div>
+          </article>
+        </aside>
+      </section>
+    </main>
+    <script src="./auth.js"></script>
+    <script src="./student.js"></script>
+  </body>
+</html>
