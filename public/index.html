@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Performance Coaching</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <main class="shell">
+      <section class="hero panel">
+        <div>
+          <p class="eyebrow">Performance Coaching</p>
+          <h1>Upload a report. Detect the persona. Coach from evidence.</h1>
+          <p class="hero-copy">
+            This app takes a user's PDF report, extracts the report text, evaluates the likely persona,
+            and gives the coach a shared view across all uploaded users.
+          </p>
+        </div>
+      </section>
+
+      <section class="layout">
+        <article class="panel intake-panel">
+          <p class="eyebrow">Intake</p>
+          <h2>Add a user report</h2>
+          <form id="upload-form" class="upload-form">
+            <label>
+              User name
+              <input id="user-name" name="userName" type="text" placeholder="K, Dan, etc." required />
+            </label>
+            <label>
+              Report PDF
+              <input id="report-file" name="report" type="file" accept="application/pdf" required />
+            </label>
+            <button type="submit">Evaluate Persona</button>
+          </form>
+          <p id="form-status" class="status-text"></p>
+        </article>
+
+        <article class="panel coach-panel">
+          <p class="eyebrow">Coach Side</p>
+          <h2 id="coach-title">Choose a user to inspect</h2>
+          <p id="coach-summary" class="coach-summary">
+            Once a PDF is uploaded, the coach side will show the detected persona, the performance engine,
+            and the supporting evidence from the report.
+          </p>
+          <div class="coach-grid">
+            <section class="coach-block">
+              <h3>Detected Persona</h3>
+              <div id="persona-card" class="persona-card placeholder">No report selected yet.</div>
+            </section>
+            <section class="coach-block">
+              <h3>Performance Engine</h3>
+              <div id="engine-grid" class="engine-grid"></div>
+            </section>
+            <section class="coach-block">
+              <h3>Modifiers</h3>
+              <div id="modifier-grid" class="modifier-grid"></div>
+            </section>
+            <section class="coach-block">
+              <h3>Coaching Plan</h3>
+              <ul id="coaching-steps" class="coaching-steps"></ul>
+            </section>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">All Users</p>
+            <h2>Coach dashboard</h2>
+          </div>
+        </div>
+        <div id="report-list" class="report-list"></div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

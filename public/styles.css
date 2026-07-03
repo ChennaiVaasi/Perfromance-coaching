@@ -1,0 +1,213 @@
+:root {
+  --bg: #081018;
+  --panel: rgba(12, 20, 31, 0.84);
+  --line: rgba(112, 180, 255, 0.16);
+  --text: #edf4ff;
+  --muted: #93a8c7;
+  --teal: #58e4d6;
+  --violet: #9386ff;
+  --amber: #ffc56d;
+  --glow: 0 18px 60px rgba(4, 9, 17, 0.42);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 10% 15%, rgba(147, 134, 255, 0.22), transparent 26%),
+    radial-gradient(circle at 85% 20%, rgba(88, 228, 214, 0.14), transparent 22%),
+    linear-gradient(180deg, #071018 0%, #0b1420 45%, #081018 100%);
+}
+
+.noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.14;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.shell {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 28px 18px 44px;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
+    var(--panel);
+  box-shadow: var(--glow);
+  backdrop-filter: blur(20px);
+}
+
+.hero {
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.78rem;
+}
+
+h1,
+h2,
+h3 {
+  font-family: Georgia, serif;
+  letter-spacing: -0.03em;
+}
+
+h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2.8rem, 7vw, 5.2rem);
+  line-height: 0.95;
+}
+
+.hero-copy,
+.coach-summary,
+.status-text,
+.report-meta,
+.metric-reading,
+.modifier-card p,
+.persona-card p,
+.coaching-steps li {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 0.78fr 1.22fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.upload-form {
+  display: grid;
+  gap: 14px;
+}
+
+.upload-form label {
+  display: grid;
+  gap: 8px;
+  color: var(--text);
+}
+
+.upload-form input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.upload-form button {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, var(--teal), var(--violet));
+  color: #071018;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.status-text {
+  min-height: 24px;
+  margin: 12px 0 0;
+}
+
+.coach-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.coach-block {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.coach-block h3 {
+  margin: 0 0 12px;
+}
+
+.persona-card,
+.metric-card,
+.modifier-card,
+.report-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.persona-card.placeholder {
+  color: var(--muted);
+}
+
+.engine-grid,
+.modifier-grid,
+.report-list {
+  display: grid;
+  gap: 12px;
+}
+
+.metric-card strong,
+.modifier-card strong,
+.report-card h3,
+.persona-card strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.coaching-steps {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.report-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.report-card {
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.report-card:hover,
+.report-card.active {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
+}
+
+.report-meta {
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1100px) {
+  .layout,
+  .coach-grid,
+  .report-list {
+    grid-template-columns: 1fr;
+  }
+}
