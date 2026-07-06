@@ -6,8 +6,7 @@ const { promisify } = require("util");
 const { createWorker } = require("tesseract.js");
 
 const execFileAsync = promisify(execFile);
-const PDFTOPPM_PATH =
-  "C:\\Users\\Welcome\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe";
+const PDFTOPPM_PATH = "pdftoppm";
 
 async function extractOcrTextFromPdfBuffer(buffer, options = {}) {
   const maxPages = options.maxPages || 3;
