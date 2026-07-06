@@ -23,14 +23,6 @@ const signatureLabel = document.getElementById("signature-label");
 const signatureHeadline = document.getElementById("signature-headline");
 const signatureSupport = document.getElementById("signature-support");
 const adminLogoutButton = document.getElementById("admin-logout");
-const adminHotspot = document.getElementById("admin-hotspot");
-const hiddenAdminPanel = document.getElementById("hidden-admin-panel");
-const adminPanelClose = document.getElementById("admin-panel-close");
-const adminLoginForm = document.getElementById("admin-login-form");
-const adminUsernameInput = document.getElementById("admin-username");
-const adminPasswordInput = document.getElementById("admin-password");
-const adminStatus = document.getElementById("admin-status");
-const adminCredentialsPanel = document.getElementById("admin-credentials-panel");
 const studentCredentialForm = document.getElementById("student-credential-form");
 const credentialStudentName = document.getElementById("credential-student-name");
 const credentialUsername = document.getElementById("credential-username");
@@ -40,8 +32,6 @@ const adminUserList = document.getElementById("admin-user-list");
 
 let reports = [];
 let activeReportId = "";
-let adminHotspotCount = 0;
-let adminHotspotTimer = null;
 
 function buildPlainPersonaRead(evaluation) {
   const { primaryPersona, timePersona, extractedSignals, peakFlow } = evaluation;
@@ -77,11 +67,6 @@ function buildPlainPersonaRead(evaluation) {
 function setStatus(message, isError = false) {
   formStatus.textContent = message;
   formStatus.style.color = isError ? "#ff9c9c" : "";
-}
-
-function setAdminStatus(message, isError = false) {
-  adminStatus.textContent = message;
-  adminStatus.style.color = isError ? "#ff9c9c" : "";
 }
 
 function setCredentialStatus(message, isError = false) {
@@ -433,49 +418,7 @@ uploadForm.addEventListener("submit", async (event) => {
 
 adminLogoutButton.addEventListener("click", () => {
   clearAdminToken();
-  adminCredentialsPanel.hidden = true;
   window.location.href = "/login.html";
-});
-
-adminHotspot.addEventListener("click", () => {
-  adminHotspotCount += 1;
-  clearTimeout(adminHotspotTimer);
-  adminHotspotTimer = setTimeout(() => {
-    adminHotspotCount = 0;
-  }, 1200);
-
-  if (adminHotspotCount >= 5) {
-    hiddenAdminPanel.hidden = !hiddenAdminPanel.hidden;
-    adminHotspotCount = 0;
-  }
-});
-
-adminPanelClose.addEventListener("click", () => {
-  hiddenAdminPanel.hidden = true;
-});
-
-adminLoginForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  setAdminStatus("Signing in...");
-
-  const response = await fetch("/api/auth/admin/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: adminUsernameInput.value.trim(),
-      password: adminPasswordInput.value
-    })
-  });
-
-  const payload = await response.json();
-  if (!response.ok) {
-    setAdminStatus(payload.error || "Admin login failed.", true);
-    return;
-  }
-
-  setAdminToken(payload.token);
-  setAdminStatus("Admin unlocked.");
-  await loadAdminUsers();
 });
 
 studentCredentialForm.addEventListener("submit", async (event) => {
@@ -510,10 +453,6 @@ loadReports().catch((error) => {
   renderEmptyState();
 });
 
-if (getAdminToken()) {
-  loadAdminUsers().then(() => {
-    setAdminStatus("Admin session restored.");
-  }).catch(() => {
-    clearAdminToken();
-  });
-}
+loadAdminUsers().catch(() => {
+  renderAdminUsers([]);
+});

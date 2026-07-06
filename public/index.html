@@ -20,27 +20,16 @@
         </div>
       </nav>
 
-      <section class="panel hidden-admin-panel" id="hidden-admin-panel" hidden>
+      <section class="panel" id="students-panel">
         <div class="top-nav">
           <div>
-            <p class="panel-label">Admin Access</p>
-            <strong>Hidden coach controls</strong>
+            <p class="panel-label">Student Access</p>
+            <strong>Create &amp; manage student logins</strong>
           </div>
-          <button id="admin-panel-close" class="ghost-button" type="button">Close</button>
         </div>
         <div class="detail-grid">
           <article class="panel">
-            <p class="panel-label">Admin Login</p>
-            <form id="admin-login-form" class="upload-form auth-form">
-              <input id="admin-username" type="text" placeholder="Coach username" value="coach" />
-              <input id="admin-password" type="password" placeholder="Admin password" value="6464" />
-              <button type="submit">Unlock Admin</button>
-            </form>
-            <p id="admin-status" class="status-text"></p>
-          </article>
-
-          <article class="panel" id="admin-credentials-panel" hidden>
-            <p class="panel-label">Student Credentials</p>
+            <p class="panel-label">Create or Update Student</p>
             <form id="student-credential-form" class="upload-form auth-form">
               <input id="credential-student-name" type="text" placeholder="Student name (matches report user name)" />
               <input id="credential-username" type="text" placeholder="Student login username" />
@@ -48,7 +37,11 @@
               <button type="submit">Save Student Login</button>
             </form>
             <p id="credential-status" class="status-text"></p>
-            <div class="report-list admin-user-list" id="admin-user-list"></div>
+          </article>
+
+          <article class="panel">
+            <p class="panel-label">Current Students</p>
+            <div class="report-list" id="admin-user-list"></div>
           </article>
         </div>
       </section>
