@@ -268,11 +268,13 @@ body {
 .orb-ring-a {
   inset: 8%;
   border: 1px solid rgba(143, 134, 255, 0.42);
+  animation: orb-spin-a 18s linear infinite;
 }
 
 .orb-ring-b {
   inset: 20%;
   border: 1px dashed rgba(93, 226, 211, 0.38);
+  animation: orb-spin-b 26s linear infinite;
 }
 
 .orb-core {
@@ -291,6 +293,7 @@ body {
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
+  transition: opacity 0.55s ease;
 }
 
 .orb-core strong {
@@ -300,6 +303,7 @@ body {
   font-size: clamp(1.15rem, 2.4vw, 1.6rem);
   line-height: 1.08;
   text-wrap: balance;
+  transition: opacity 0.55s ease;
 }
 
 .orb-core p {
@@ -311,6 +315,17 @@ body {
   -webkit-line-clamp: 6;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  transition: opacity 0.55s ease;
+}
+
+@keyframes orb-spin-a {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes orb-spin-b {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
 }
 
 .observatory-grid {

@@ -371,6 +371,7 @@ function renderReport(report) {
     return;
   }
 
+  stopOrbCycle();
   renderSummary(report);
   renderPersona(report);
   renderPeakFlow(report);
@@ -538,6 +539,56 @@ coachResourceForm.addEventListener("submit", async (event) => {
   renderCoachResources(payload.resources || []);
 });
 
+const ORB_PERSONAS = [
+  { label: "Persona Detected", headline: "Speed Reactor", support: "Explosive activation and fast-start outputs define this pattern across sessions." },
+  { label: "Persona Detected", headline: "Endurance Anchor", support: "Steady, high-quality output sustained across long flow windows." },
+  { label: "Persona Detected", headline: "Adaptive Thinker", support: "Reads the environment mid-session and adjusts without losing momentum." },
+  { label: "Persona Detected", headline: "Flow Keeper", support: "Maintains a consistent rhythm with peak output concentrated in one window." },
+  { label: "Persona Detected", headline: "Agility Driver", support: "Rapid context-switching with short, high-intensity bursts across activities." },
+  { label: "Persona Detected", headline: "Deep Processor", support: "Long ramp-up before peak, but output quality exceeds average once settled." }
+];
+
+let orbCycleTimer = null;
+let orbCycleIndex = 0;
+let orbCycling = false;
+
+function setOrbContent(label, headline, support) {
+  signatureLabel.textContent = label;
+  signatureHeadline.textContent = headline;
+  signatureSupport.textContent = support;
+}
+
+function fadeOrbTo(label, headline, support) {
+  const els = [signatureLabel, signatureHeadline, signatureSupport];
+  els.forEach((el) => { el.style.opacity = "0"; });
+  setTimeout(() => {
+    setOrbContent(label, headline, support);
+    els.forEach((el) => { el.style.opacity = "1"; });
+  }, 580);
+}
+
+function startOrbCycle() {
+  if (orbCycling) return;
+  orbCycling = true;
+  orbCycleIndex = 0;
+  fadeOrbTo(ORB_PERSONAS[0].label, ORB_PERSONAS[0].headline, ORB_PERSONAS[0].support);
+  orbCycleTimer = setInterval(() => {
+    orbCycleIndex = (orbCycleIndex + 1) % ORB_PERSONAS.length;
+    const p = ORB_PERSONAS[orbCycleIndex];
+    fadeOrbTo(p.label, p.headline, p.support);
+  }, 3200);
+}
+
+function stopOrbCycle() {
+  if (orbCycleTimer) {
+    clearInterval(orbCycleTimer);
+    orbCycleTimer = null;
+  }
+  orbCycling = false;
+  const els = [signatureLabel, signatureHeadline, signatureSupport];
+  els.forEach((el) => { el.style.opacity = "1"; });
+}
+
 loadReports().catch((error) => {
   setStatus(`Failed to load reports: ${error.message}`, true);
   renderEmptyState();
@@ -546,3 +597,5 @@ loadReports().catch((error) => {
 loadAdminUsers().catch(() => {
   renderAdminUsers([]);
 });
+
+startOrbCycle();

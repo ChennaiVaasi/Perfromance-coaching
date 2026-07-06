@@ -198,6 +198,7 @@ function renderStudentReport(report) {
     return;
   }
 
+  stopStudentOrbCycle();
   const { evaluation } = report;
   studentTitle.textContent = `${report.userName} · ${evaluation.primaryPersona.name}`;
   studentSummary.textContent = evaluation.summary;
@@ -390,10 +391,57 @@ if (isAdminViewing) {
   if (studentUploadForm) studentUploadForm.closest("article").hidden = true;
 }
 
+const STUDENT_ORB_PERSONAS = [
+  { label: "Persona Detected", headline: "Speed Reactor", support: "Explosive activation and fast-start outputs define this pattern across sessions." },
+  { label: "Persona Detected", headline: "Endurance Anchor", support: "Steady, high-quality output sustained across long flow windows." },
+  { label: "Persona Detected", headline: "Adaptive Thinker", support: "Reads the environment mid-session and adjusts without losing momentum." },
+  { label: "Persona Detected", headline: "Flow Keeper", support: "Maintains a consistent rhythm with peak output in one concentrated window." },
+  { label: "Persona Detected", headline: "Agility Driver", support: "Rapid context-switching with short, high-intensity bursts across activities." },
+  { label: "Persona Detected", headline: "Deep Processor", support: "Long ramp-up before peak, but output quality exceeds average once settled." }
+];
+
+let studentOrbTimer = null;
+let studentOrbIndex = 0;
+let studentOrbCycling = false;
+
+function fadeStudentOrbTo(label, headline, support) {
+  const els = [studentSignatureLabel, studentSignatureHeadline, studentSignatureSupport];
+  els.forEach((el) => { el.style.opacity = "0"; });
+  setTimeout(() => {
+    studentSignatureLabel.textContent = label;
+    studentSignatureHeadline.textContent = headline;
+    studentSignatureSupport.textContent = support;
+    els.forEach((el) => { el.style.opacity = "1"; });
+  }, 580);
+}
+
+function startStudentOrbCycle() {
+  if (studentOrbCycling) return;
+  studentOrbCycling = true;
+  studentOrbIndex = 0;
+  const p0 = STUDENT_ORB_PERSONAS[0];
+  fadeStudentOrbTo(p0.label, p0.headline, p0.support);
+  studentOrbTimer = setInterval(() => {
+    studentOrbIndex = (studentOrbIndex + 1) % STUDENT_ORB_PERSONAS.length;
+    const p = STUDENT_ORB_PERSONAS[studentOrbIndex];
+    fadeStudentOrbTo(p.label, p.headline, p.support);
+  }, 3200);
+}
+
+function stopStudentOrbCycle() {
+  if (studentOrbTimer) {
+    clearInterval(studentOrbTimer);
+    studentOrbTimer = null;
+  }
+  studentOrbCycling = false;
+  [studentSignatureLabel, studentSignatureHeadline, studentSignatureSupport].forEach((el) => { el.style.opacity = "1"; });
+}
+
 if (activeStudentName) {
   studentAppShell.hidden = false;
   studentTabShell.hidden = false;
   activateStudentTab(activeStudentTab);
+  startStudentOrbCycle();
   Promise.all([loadStudentReports(activeStudentName), loadStudentResources(activeStudentName)]).catch((error) => {
     setStudentStatus(error.message, true);
     renderStudentEmptyState(error.message);
