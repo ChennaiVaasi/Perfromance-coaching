@@ -3,6 +3,7 @@ const studentParams = new URLSearchParams(window.location.search);
 const studentAppShell = document.getElementById("student-app-shell");
 const studentTabShell = document.getElementById("student-tab-shell");
 const studentLogoutButton = document.getElementById("student-logout");
+const studentBackLink = document.getElementById("student-back-to-coach");
 const studentStatus = document.getElementById("student-status");
 const studentUploadForm = document.getElementById("student-upload-form");
 const studentReportFileInput = document.getElementById("student-report-file");
@@ -29,10 +30,15 @@ const studentResourceList = document.getElementById("student-resource-list");
 const studentTabButtons = document.querySelectorAll("[data-student-tab]");
 const studentTabPanels = document.querySelectorAll("[data-student-panel]");
 
+const isAdminViewing = !!getAdminToken() && !getStudentToken();
+const studentRole = isAdminViewing ? "admin" : "student";
+
 let studentReports = [];
 let studentResources = [];
 let activeStudentReportId = studentParams.get("report") || "";
-let activeStudentName = getStudentName() || "";
+let activeStudentName = isAdminViewing
+  ? (studentParams.get("user") || "").trim()
+  : getStudentName() || "";
 let activeStudentTab = "persona";
 
 function setStudentStatus(message, isError = false) {
@@ -279,12 +285,12 @@ function renderStudentReport(report) {
 }
 
 async function loadStudentResources(userName) {
-  const response = await apiFetch(`/api/students/${encodeURIComponent(userName)}/resources`, { role: "student" });
+  const response = await apiFetch(`/api/students/${encodeURIComponent(userName)}/resources`, { role: studentRole });
   if (response.status === 401 || response.status === 403) {
-    clearStudentSession();
     studentAppShell.hidden = true;
     studentTabShell.hidden = true;
-    window.location.href = "/login.html";
+    if (!isAdminViewing) clearStudentSession();
+    window.location.href = isAdminViewing ? "/" : "/login.html";
     return;
   }
 
@@ -306,12 +312,12 @@ async function loadStudentReports(userName) {
 
   activeStudentName = trimmed;
   setStudentStatus("Loading student reports...");
-  const response = await apiFetch(`/api/students/${encodeURIComponent(trimmed)}/reports`, { role: "student" });
+  const response = await apiFetch(`/api/students/${encodeURIComponent(trimmed)}/reports`, { role: studentRole });
   if (response.status === 401 || response.status === 403) {
-    clearStudentSession();
     studentAppShell.hidden = true;
     studentTabShell.hidden = true;
-    window.location.href = "/login.html";
+    if (!isAdminViewing) clearStudentSession();
+    window.location.href = isAdminViewing ? "/" : "/login.html";
     return;
   }
 
@@ -366,13 +372,23 @@ studentUploadForm.addEventListener("submit", async (event) => {
 });
 
 studentLogoutButton.addEventListener("click", () => {
-  clearStudentSession();
-  activeStudentName = "";
-  activeStudentReportId = "";
-  studentAppShell.hidden = true;
-  studentTabShell.hidden = true;
-  window.location.href = "/login.html";
+  if (isAdminViewing) {
+    window.location.href = "/";
+  } else {
+    clearStudentSession();
+    activeStudentName = "";
+    activeStudentReportId = "";
+    studentAppShell.hidden = true;
+    studentTabShell.hidden = true;
+    window.location.href = "/login.html";
+  }
 });
+
+if (isAdminViewing) {
+  if (studentBackLink) studentBackLink.hidden = false;
+  if (studentLogoutButton) studentLogoutButton.textContent = "Back to Coach";
+  if (studentUploadForm) studentUploadForm.closest("article").hidden = true;
+}
 
 if (activeStudentName) {
   studentAppShell.hidden = false;
@@ -385,5 +401,5 @@ if (activeStudentName) {
 } else {
   studentAppShell.hidden = true;
   studentTabShell.hidden = true;
-  window.location.href = "/login.html";
+  window.location.href = isAdminViewing ? "/" : "/login.html";
 }
