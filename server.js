@@ -313,7 +313,11 @@ app.post("/api/auth/student/login", (req, res) => {
 });
 
 app.get("/api/admin/users", requireAdmin, (_req, res) => {
-  res.json({ users: readUsers() });
+  try {
+    res.json({ users: readUsers() });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post("/api/admin/users", requireAdmin, (req, res) => {
@@ -335,30 +339,42 @@ app.post("/api/admin/users", requireAdmin, (req, res) => {
 });
 
 app.get("/api/reports", requireAdmin, (_req, res) => {
-  const reports = readReports().sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-  res.json({ reports });
+  try {
+    const reports = readReports().sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    res.json({ reports });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get("/api/students/:userName/reports", requireStudentOrAdmin, (req, res) => {
-  const requestedUser = (req.params.userName || "").trim().toLowerCase();
-  const reports = readReports()
-    .filter((report) => report.userName.toLowerCase() === requestedUser)
-    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-  const enrichedReports = reports.map((report) => enrichReportWithHistory(report, reports));
+  try {
+    const requestedUser = (req.params.userName || "").trim().toLowerCase();
+    const reports = readReports()
+      .filter((report) => report.userName.toLowerCase() === requestedUser)
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    const enrichedReports = reports.map((report) => enrichReportWithHistory(report, reports));
 
-  res.json({
-    userName: req.params.userName,
-    reports: enrichedReports
-  });
+    res.json({
+      userName: req.params.userName,
+      reports: enrichedReports
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get("/api/students/:userName/resources", requireStudentOrAdmin, (req, res) => {
-  const requestedUser = (req.params.userName || "").trim().toLowerCase();
-  const resources = readSuggestions()
-    .filter((item) => item.studentName.toLowerCase() === requestedUser)
-    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  try {
+    const requestedUser = (req.params.userName || "").trim().toLowerCase();
+    const resources = readSuggestions()
+      .filter((item) => item.studentName.toLowerCase() === requestedUser)
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 
-  res.json({ userName: req.params.userName, resources });
+    res.json({ userName: req.params.userName, resources });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post("/api/admin/students/:userName/resources", requireAdmin, (req, res) => {
@@ -389,27 +405,39 @@ app.post("/api/admin/students/:userName/resources", requireAdmin, (req, res) => 
 });
 
 app.get("/api/reports/:reportId", requireReportAccess, (req, res) => {
-  res.json({ report: req.report });
+  try {
+    res.json({ report: req.report });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get("/api/reports/:reportId/evidence/:metricKey", requireReportAccess, (req, res) => {
-  const evidence = req.report.evaluation?.metricEvidence?.[req.params.metricKey];
-  if (!evidence) {
-    res.status(404).json({ error: "Metric evidence not found." });
-    return;
-  }
+  try {
+    const evidence = req.report.evaluation?.metricEvidence?.[req.params.metricKey];
+    if (!evidence) {
+      res.status(404).json({ error: "Metric evidence not found." });
+      return;
+    }
 
-  res.json({ report: req.report, evidence });
+    res.json({ report: req.report, evidence });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get("/api/reports/:reportId/activities/:activityKey", requireReportAccess, (req, res) => {
-  const branch = (req.report.evaluation?.activityBranches || []).find((item) => item.key === req.params.activityKey);
-  if (!branch) {
-    res.status(404).json({ error: "Activity branch not found." });
-    return;
-  }
+  try {
+    const branch = (req.report.evaluation?.activityBranches || []).find((item) => item.key === req.params.activityKey);
+    if (!branch) {
+      res.status(404).json({ error: "Activity branch not found." });
+      return;
+    }
 
-  res.json({ report: req.report, branch });
+    res.json({ report: req.report, branch });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get("/api/reports/:reportId/pdf", requireReportAccess, (req, res) => {

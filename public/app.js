@@ -23,6 +23,7 @@ const signatureLabel = document.getElementById("signature-label");
 const signatureHeadline = document.getElementById("signature-headline");
 const signatureSupport = document.getElementById("signature-support");
 const adminLogoutButton = document.getElementById("admin-logout");
+const adminCredentialsPanel = document.getElementById("students-panel");
 const studentCredentialForm = document.getElementById("student-credential-form");
 const credentialStudentName = document.getElementById("credential-student-name");
 const credentialUsername = document.getElementById("credential-username");
