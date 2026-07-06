@@ -6,6 +6,7 @@ const activityTitleEl = document.getElementById("activity-title");
 const activitySummaryEl = document.getElementById("activity-summary");
 const activityMetaEl = document.getElementById("activity-meta");
 const activityHighlightsEl = document.getElementById("activity-highlights");
+const activityPersonaEl = document.getElementById("activity-persona");
 const activitySessionsEl = document.getElementById("activity-sessions");
 
 function renderMeta(items) {
@@ -52,6 +53,20 @@ async function loadActivity() {
   activityHighlightsEl.innerHTML = `
     <ul class="coach-steps">${branch.highlights.map((item) => `<li>${item}</li>`).join("")}</ul>
   `;
+
+  activityPersonaEl.innerHTML = branch.persona
+    ? `
+      <div class="persona-heading">
+        <div>
+          <strong>${branch.persona.name}</strong>
+          <div class="persona-angle">${branch.persona.angle}</div>
+          <div class="persona-note">${branch.persona.summary}</div>
+        </div>
+        <span class="persona-chip">${branch.label}</span>
+      </div>
+      <ul class="coach-steps">${(branch.persona.evidence || []).map((item) => `<li>${item}</li>`).join("")}</ul>
+    `
+    : '<p class="strapline">No scoped persona could be formed for this activity yet.</p>';
 
   activitySessionsEl.innerHTML = relatedSessions.length
     ? relatedSessions

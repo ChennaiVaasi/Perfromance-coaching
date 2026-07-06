@@ -482,11 +482,11 @@ function inferActivityModifiers(text) {
   const lower = text.toLowerCase();
   const modifiers = [];
 
-  if (/(puzzle|study|lecture|calculation)/i.test(lower)) {
+  if (/(puzzle|study|lecture|calculation|solving|observing thoughts)/i.test(lower)) {
     modifiers.push({
       label: "Activity",
-      value: "Study-heavy",
-      note: "Study, puzzle, or lecture work seems to reveal the clearest version of this persona."
+      value: "Solving-heavy",
+      note: "Solving-style work seems to reveal the clearest version of this persona."
     });
   }
 
@@ -529,11 +529,28 @@ function inferPrimaryActivity(text, chartSessions) {
 
 function classifyActivity(activityName) {
   const lower = activityName.toLowerCase();
-  if (lower.includes("puzzle")) return "Puzzles";
-  if (lower.includes("polgar")) return "Study";
-  if (lower.includes("lecture")) return "Lecture";
-  if (lower.includes("game")) return "Games";
-  if (lower.includes("calculation")) return "Calculation";
+  if (
+    lower.includes("game") ||
+    lower.includes("match") ||
+    lower.includes("vs ") ||
+    lower.includes("against ")
+  ) {
+    return "Playing";
+  }
+
+  if (
+    lower.includes("puzzle") ||
+    lower.includes("solve") ||
+    lower.includes("solving") ||
+    lower.includes("polgar") ||
+    lower.includes("calculation") ||
+    lower.includes("tactics") ||
+    lower.includes("endgame") ||
+    lower.includes("analysis")
+  ) {
+    return "Solving";
+  }
+
   return "Other";
 }
 
@@ -660,6 +677,7 @@ function buildMetricEvidence(reportText, chartSessions, metrics, peakFlow, timeP
 function buildActivityBranches(reportText, chartSessions, metricEvidence, timePersona) {
   if (!chartSessions.length) {
     const activity = inferPrimaryActivity(reportText, chartSessions);
+    const fallbackPersona = inferPrimaryPersona(reportText, { speed: 44, agility: 46, endurance: 48 }, []);
     return [
       {
         key: classifyActivity(activity).toLowerCase().replace(/\s+/g, "-"),
@@ -668,6 +686,12 @@ function buildActivityBranches(reportText, chartSessions, metricEvidence, timePe
         sessions: 1,
         bestWindow: timePersona.window,
         summary: `${activity} is the only clearly named activity in this report, so the branch is being built from the single-session evidence.`,
+        persona: {
+          name: fallbackPersona.name,
+          angle: fallbackPersona.angle,
+          summary: fallbackPersona.summary,
+          evidence: fallbackPersona.evidence
+        },
         highlights: [
           `Primary activity: ${activity}.`,
           `Time window: ${timePersona.window}.`,
@@ -689,6 +713,12 @@ function buildActivityBranches(reportText, chartSessions, metricEvidence, timePe
     const bestSpeed = [...sessions].sort((a, b) => b.speed - a.speed)[0];
     const bestAgility = [...sessions].sort((a, b) => b.agility - a.agility)[0];
     const bestEndurance = [...sessions].sort((a, b) => b.endurance - a.endurance)[0];
+    const branchMetrics = {
+      speed: sessions.reduce((sum, session) => sum + session.speed, 0) / sessions.length,
+      agility: sessions.reduce((sum, session) => sum + session.agility, 0) / sessions.length,
+      endurance: sessions.reduce((sum, session) => sum + session.endurance, 0) / sessions.length
+    };
+    const branchPersona = inferPrimaryPersona(reportText, branchMetrics, sessions);
 
     return {
       key: label.toLowerCase().replace(/\s+/g, "-"),
@@ -697,6 +727,12 @@ function buildActivityBranches(reportText, chartSessions, metricEvidence, timePe
       sessions: sessions.length,
       bestWindow: `${bestSustained.time} · ${bestSustained.duration}`,
       summary: `${label} tends to look best when ${bestSustained.name} is active, with its strongest sustained window at ${bestSustained.duration}.`,
+      persona: {
+        name: branchPersona.name,
+        angle: branchPersona.angle,
+        summary: branchPersona.summary,
+        evidence: branchPersona.evidence
+      },
       highlights: [
         `Strongest sustained session: ${bestSustained.name} at ${bestSustained.time}.`,
         `Fastest expression: ${bestSpeed.name} at speed ${bestSpeed.speed}.`,
@@ -705,6 +741,94 @@ function buildActivityBranches(reportText, chartSessions, metricEvidence, timePe
       ]
     };
   });
+}
+
+function buildActivityPersona(reportText, activityBranches, chartSessions, metrics) {
+  if (!activityBranches.length) {
+    return {
+      label: "Activity Persona pending",
+      driver: "Not enough activity evidence yet",
+      summary: "The report does not expose enough activity structure to describe how this user works by activity.",
+      evidence: ["Activity labels were not cleanly visible in this report yet."]
+    };
+  }
+
+  const branchSessionsByLabel = new Map();
+  for (const session of chartSessions) {
+    const label = classifyActivity(session.name);
+    if (!branchSessionsByLabel.has(label)) {
+      branchSessionsByLabel.set(label, []);
+    }
+    branchSessionsByLabel.get(label).push(session);
+  }
+
+  const rankedBranches = [...activityBranches]
+    .map((branch) => {
+      const sessions = branchSessionsByLabel.get(branch.label) || [];
+      const totalDurationSeconds = sessions.reduce((sum, session) => sum + (session.durationSeconds || 0), 0);
+      return {
+        ...branch,
+        totalDurationSeconds
+      };
+    })
+    .sort((a, b) => {
+      if (b.sessions !== a.sessions) return b.sessions - a.sessions;
+      return b.totalDurationSeconds - a.totalDurationSeconds;
+    });
+
+  const dominantBranch = rankedBranches[0];
+  const secondaryBranch = rankedBranches[1] || null;
+  const totalSessions = rankedBranches.reduce((sum, branch) => sum + branch.sessions, 0);
+  const dominantShare = totalSessions ? dominantBranch.sessions / totalSessions : 1;
+  const branchDriverLines = {
+    Playing: "Playing is where competitive execution is showing up most clearly.",
+    Solving: "Solving is where the cleanest cognitive signature is showing up most clearly.",
+    Other: "Other work is carrying a meaningful part of the visible pattern."
+  };
+
+  const dominantSessions = branchSessionsByLabel.get(dominantBranch.label) || [];
+  const branchMetrics = dominantSessions.length
+    ? {
+        speed: dominantSessions.reduce((sum, session) => sum + session.speed, 0) / dominantSessions.length,
+        agility: dominantSessions.reduce((sum, session) => sum + session.agility, 0) / dominantSessions.length,
+        endurance: dominantSessions.reduce((sum, session) => sum + session.endurance, 0) / dominantSessions.length
+      }
+    : metrics;
+  const branchPersona = dominantBranch.persona || inferPrimaryPersona(reportText, branchMetrics, dominantSessions);
+
+  if (secondaryBranch && dominantBranch.sessions === secondaryBranch.sessions) {
+    return {
+      label: branchPersona.name,
+      driver: `${dominantBranch.label} and ${secondaryBranch.label}`,
+      summary: `${branchPersona.name} appears across a mixed activity pattern. ${dominantBranch.label} and ${secondaryBranch.label} are both materially shaping the visible pattern.`,
+      evidence: [
+        `${dominantBranch.label} and ${secondaryBranch.label} are tied on visible session count (${dominantBranch.sessions} each).`,
+        `${branchPersona.name} is the closest persona fit inside the leading activity evidence.`,
+        `${branchDriverLines[dominantBranch.label] || "The leading branch is meaningful."}`,
+        secondaryBranch.summary
+      ]
+    };
+  }
+
+  const summaryLead =
+    dominantShare >= 0.6
+      ? `${dominantBranch.label} clearly dominates the visible activity mix.`
+      : `${dominantBranch.label} leads the visible activity mix, but not by a runaway margin.`;
+
+  return {
+    label: branchPersona.name,
+    driver: dominantBranch.label,
+    summary: `${summaryLead} Within ${dominantBranch.label.toLowerCase()}, the closest persona read is ${branchPersona.name.toLowerCase()}. ${branchPersona.summary}`,
+    evidence: [
+      `${dominantBranch.label} accounts for ${dominantBranch.sessions} of ${totalSessions} visible activity sessions.`,
+      `Inside this branch, the activity-level signals read most like ${branchPersona.name.toLowerCase()}.`,
+      dominantBranch.summary,
+      branchDriverLines[dominantBranch.label] || "The leading branch is the clearest place to read this user.",
+      secondaryBranch
+        ? `${secondaryBranch.label} is the next strongest branch, which helps explain where the persona shifts.`
+        : "Only one activity branch is visible in this report, so this activity persona is provisional."
+    ]
+  };
 }
 
 function inferFocusWellnessImpact(text) {
@@ -892,6 +1016,7 @@ function evaluatePersonaFromReport({ userName, reportText, ocrText = "", origina
   const coaching = buildCoaching(primaryPersona, timePersona, peakFlow, metrics);
   const metricEvidence = buildMetricEvidence(cleanedReportText, chartSessions, metrics, peakFlow, timePersona);
   const activityBranches = buildActivityBranches(cleanedReportText, chartSessions, metricEvidence, timePersona);
+  const activityPersona = buildActivityPersona(cleanedReportText, activityBranches, chartSessions, metrics);
 
   return {
     userName,
@@ -903,6 +1028,7 @@ function evaluatePersonaFromReport({ userName, reportText, ocrText = "", origina
     performanceEngine,
     modifiers,
     focusWellnessImpact,
+    activityPersona,
     coaching,
     chartSessions,
     reportCoverage,

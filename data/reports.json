@@ -1,1 +1,560 @@
-[]
+[
+  {
+    "id": "report-1783052740456",
+    "userName": "K",
+    "originalFileName": "K_All_Behavioural_Patterns.pdf",
+    "createdAt": "2026-07-03T04:25:40.456Z",
+    "reportText": "Behavioural Patterns Apr 07-Jun 30, 2026 · 39 unique reports PEAK ENDURANCEPEAK SPEEDCORE PATTERN 60.166.1Agility held best Puzzles SolvingPolgar StudiesFocus used 87.0% of tracked time June 12 · 09:13 AMMay 25 · 07:02 PMWellness used 13.0%, other 0.0% No true content duplicates were found, but only 2 filename stems were reused across all 39 files. KEY INSIGHTS IN K ALL K All covers 39 unique sessions from April 07, 2026 through June 30, 2026, with no true duplicate content. The main data-quality problem is filename reuse: only 2 normalized filenames were used to store all 39 different reports. Polgar Studies was the fastest session at 66.1 speed, while Puzzles Solving had the best endurance at 60.1. Polgar Studies carried the highest agility at 61.4, reinforcing that agility often stayed stronger than raw speed. The slowest ramp-up appeared in Lecture at 368s, matching the broader pattern of startup friction across the folder. REPRESENTATIVE SESSIONS A high-signal cross-section of K All rather than the full 39-row ledger. SessionTimeDurationSpee d AgilityEnduran ce Reading Polgar StudiesMay 25 · 07:02 PM 30m 23s66.143.636.5Fastest session Puzzles SolvingJun 12 · 09:13 AM 54m 46s55.443.560.1Strongest stamina Polgar StudiesMay 21 · 06:53 PM 30m 20s54.361.448.1Best agility LectureApr 13 · 11:15 AM 1h 0m 20s21.849.657.8Largest ramp-up delay Classical Game Against Sanjay Jun 13 · 02:37 PM 4m 19s58.629.730.7Shortest sample Game Against RaghavJun 04 · 02:05 PM 1h 45m 18s 34.659.558.2Longest session PATTERN READ Directional findings across the full K All set. FILES The folder is unique by content but messy by filename All 39 files resolved to different session records. Only 2 normalized filename stems were reused across them. TIME MIX Focus work dominated tracked time Focus sessions covered 20h 26m 12s of tracked time. Wellness sessions covered 3h 3m 40s and other 0m 0s. SCORES Agility stayed more resilient than speed Top agility reached 61.4, while top speed peaked at 66.1. Startup quality and endurance separated more often than agility did. RAMP-UP Startup friction is the repeat problem Deep-work ramp-up ranged from 0s to 368s. That makes settling into deep work a more stable issue than any single task label.",
+    "evaluation": {
+      "userName": "K",
+      "reportTitle": "K_All_Behavioural_Patterns.pdf",
+      "summary": "K's report suggests a Dual-mode core, an Evening Spark time persona, and a peak flow duration around 54m 46s.",
+      "primaryPersona": {
+        "name": "Dual-mode",
+        "angle": "Slow-Burn Operator",
+        "summary": "Shows different strengths in different contexts instead of one fixed cognitive mode. Slow-Burn Operator is the deeper performance style underneath this read.",
+        "evidence": [
+          "The report keeps showing both speed-led and agility-led moments rather than one stable thinker style.",
+          "The report contains meaningful visible sessions on both sides of the speed-versus-agility split (3 speed-led, 2 agility-led).",
+          "Gets stronger after settling in and often produces the best work once the runway is long enough.",
+          "The report explicitly points to startup friction or a slower ramp-up pattern."
+        ]
+      },
+      "timePersona": {
+        "label": "Evening Spark",
+        "window": "06:53 PM",
+        "summary": "Polgar Studies suggests evening spark is where the user's strongest flow signature appears.",
+        "evidence": [
+          "Polgar Studies had the strongest combined chart profile.",
+          "The session happened at 06:53 PM.",
+          "Its duration was 30m 20s."
+        ]
+      },
+      "peakFlow": {
+        "duration": "54m 46s",
+        "sessionName": "Puzzles Solving",
+        "timePersona": "Morning Settler",
+        "window": "09:13 AM",
+        "basis": "Best sustained session from the chart",
+        "reading": "54m 46s looks like the strongest sustained flow window from the chart, driven by Puzzles Solving."
+      },
+      "performanceEngine": [
+        {
+          "id": "endurance",
+          "label": "Endurance",
+          "score": 60.1,
+          "width": "90.92284417549169%",
+          "reading": "How well the user stays with the work once the session has begun."
+        },
+        {
+          "id": "speed",
+          "label": "Speed",
+          "score": 66.1,
+          "width": "100%",
+          "reading": "How quickly the user activates or moves through the work."
+        },
+        {
+          "id": "agility",
+          "label": "Agility",
+          "score": 61.4,
+          "width": "92.88956127080182%",
+          "reading": "How flexibly the user adapts inside the work without breaking it."
+        },
+        {
+          "id": "peak-flow",
+          "label": "Peak Flow Duration",
+          "score": "54m 46s",
+          "width": "100%",
+          "reading": "54m 46s looks like the strongest sustained flow window from the chart, driven by Puzzles Solving."
+        }
+      ],
+      "modifiers": [
+        {
+          "label": "Activity",
+          "value": "Solving-heavy",
+          "note": "Solving-style work seems to reveal the clearest version of this persona."
+        },
+        {
+          "label": "Wellness",
+          "value": "Calm entry matters",
+          "note": "The report suggests the user performs better when the session begins from a steadier internal state."
+        },
+        {
+          "label": "Focus",
+          "value": "Focus amplifies the persona",
+          "note": "Cleaner focus makes the strongest persona more repeatable."
+        }
+      ],
+      "focusWellnessImpact": {
+        "focusPercent": 87,
+        "wellnessPercent": 13,
+        "impactSummary": "The user spent 87% of tracked time in focus work and 13% in wellness work. Focus appears to build the main persona, while wellness likely improves entry quality and recovery.",
+        "timeSpent": [
+          {
+            "label": "Focus",
+            "value": "87%",
+            "note": "Most tracked time was spent in focus-heavy work, which likely strengthened depth, steadiness, and the slow-burn persona."
+          },
+          {
+            "label": "Wellness",
+            "value": "13%",
+            "note": "Wellness time appears to act like a stabilizer. It probably helped the user enter sessions more calmly, even if it was not the main block of time."
+          }
+        ]
+      },
+      "activityPersona": {
+        "label": "Analytical-leaning",
+        "driver": "Solving",
+        "summary": "Solving clearly dominates the visible activity mix. Within solving, the closest persona read is analytical-leaning. Leans on direct processing, sharper activation, and clearer task entry more than live improvisation. Evening Spark is the deeper performance style underneath this read.",
+        "evidence": [
+          "Solving accounts for 3 of 5 visible activity sessions.",
+          "Inside this branch, the activity-level signals read most like analytical-leaning.",
+          "Solving tends to look best when Puzzles Solving is active, with its strongest sustained window at 54m 46s.",
+          "Solving is where the cleanest cognitive signature is showing up most clearly.",
+          "Other is the next strongest branch, which helps explain where the persona shifts."
+        ]
+      },
+      "coaching": {
+        "title": "Coach Dual-mode",
+        "body": "Dual-mode is the main identity, but Evening Spark is the strongest time-based expression from the report. 54m 46s is the clearest flow-duration cue to protect.",
+        "steps": [
+          "Use the quicker windows intentionally rather than by default.",
+          "Bias coaching toward evening spark when you want the strongest version of the user.",
+          "Use 54m 46s as the first duration target when building repeatable sessions."
+        ]
+      },
+      "chartSessions": [
+        {
+          "name": "Polgar Studies",
+          "activityGroup": "Solving",
+          "time": "07:02 PM",
+          "duration": "30m 23s",
+          "speed": 66.1,
+          "agility": 43.6,
+          "endurance": 36.5,
+          "durationSeconds": 1823,
+          "composite": 48.73333333333333,
+          "durationWeighted": 88840.86666666665,
+          "timePersona": "Evening Spark"
+        },
+        {
+          "name": "Puzzles Solving",
+          "activityGroup": "Solving",
+          "time": "09:13 AM",
+          "duration": "54m 46s",
+          "speed": 55.4,
+          "agility": 43.5,
+          "endurance": 60.1,
+          "durationSeconds": 3286,
+          "composite": 53,
+          "durationWeighted": 174158,
+          "timePersona": "Morning Settler"
+        },
+        {
+          "name": "Polgar Studies",
+          "activityGroup": "Solving",
+          "time": "06:53 PM",
+          "duration": "30m 20s",
+          "speed": 54.3,
+          "agility": 61.4,
+          "endurance": 48.1,
+          "durationSeconds": 1820,
+          "composite": 54.599999999999994,
+          "durationWeighted": 99371.99999999999,
+          "timePersona": "Evening Spark"
+        },
+        {
+          "name": "Lecture",
+          "activityGroup": "Other",
+          "time": "11:15 AM",
+          "duration": "1h 0m 20s",
+          "speed": 21.8,
+          "agility": 49.6,
+          "endurance": 57.8,
+          "durationSeconds": 3620,
+          "composite": 43.06666666666666,
+          "durationWeighted": 155901.3333333333,
+          "timePersona": "Day Carrier"
+        },
+        {
+          "name": "Classical Game Against Sanjay",
+          "activityGroup": "Playing",
+          "time": "02:37 PM",
+          "duration": "4m 19s",
+          "speed": 58.6,
+          "agility": 29.7,
+          "endurance": 30.7,
+          "durationSeconds": 259,
+          "composite": 39.666666666666664,
+          "durationWeighted": 10273.666666666666,
+          "timePersona": "Day Carrier"
+        }
+      ],
+      "reportCoverage": {
+        "totalSessions": 39,
+        "visibleSessions": 5,
+        "summary": "Conclusions are being formed from 39 sessions in the report, with 5 sessions shown as visible evidence."
+      },
+      "metricEvidence": {
+        "speed": {
+          "metricKey": "speed",
+          "metricLabel": "Speed",
+          "activity": "Polgar Studies",
+          "branch": "Solving",
+          "value": 66.1,
+          "basis": "Fastest chart session",
+          "comparedTo": "Agility 43.6 and endurance 36.5 in the same session.",
+          "timeWindow": "07:02 PM · 30m 23s",
+          "sessionDate": "Representative chart session",
+          "explanation": "Polgar Studies is the fastest visible session in the chart sample.",
+          "source": "Representative sessions chart"
+        },
+        "agility": {
+          "metricKey": "agility",
+          "metricLabel": "Agility",
+          "activity": "Polgar Studies",
+          "branch": "Solving",
+          "value": 61.4,
+          "basis": "Best agility chart session",
+          "comparedTo": "Speed 54.3 and endurance 48.1 in the same session.",
+          "timeWindow": "06:53 PM · 30m 20s",
+          "sessionDate": "Representative chart session",
+          "explanation": "Polgar Studies shows the best visible adaptability signal in the chart sample.",
+          "source": "Representative sessions chart"
+        },
+        "endurance": {
+          "metricKey": "endurance",
+          "metricLabel": "Endurance",
+          "activity": "Puzzles Solving",
+          "branch": "Solving",
+          "value": 60.1,
+          "basis": "Strongest stamina chart session",
+          "comparedTo": "Speed 55.4 and agility 43.5 in the same session.",
+          "timeWindow": "09:13 AM · 54m 46s",
+          "sessionDate": "Representative chart session",
+          "explanation": "Puzzles Solving is the clearest sustained-output session in the chart sample.",
+          "source": "Representative sessions chart"
+        },
+        "peak-flow": {
+          "metricKey": "peak-flow",
+          "metricLabel": "Peak Flow Duration",
+          "activity": "Puzzles Solving",
+          "branch": "Solving",
+          "value": "54m 46s",
+          "basis": "Best sustained session from the chart",
+          "comparedTo": "Compared against 5 representative chart sessions.",
+          "timeWindow": "09:13 AM",
+          "sessionDate": "Date not isolated",
+          "explanation": "54m 46s looks like the strongest sustained flow window from the chart, driven by Puzzles Solving.",
+          "source": "Representative sessions chart",
+          "averageValue": null,
+          "peakValue": "54m 46s"
+        }
+      },
+      "activityBranches": [
+        {
+          "key": "solving",
+          "label": "Solving",
+          "activity": "Puzzles Solving",
+          "sessions": 3,
+          "bestWindow": "09:13 AM · 54m 46s",
+          "summary": "Solving tends to look best when Puzzles Solving is active, with its strongest sustained window at 54m 46s.",
+          "persona": {
+            "name": "Analytical-leaning",
+            "angle": "Evening Spark",
+            "summary": "Leans on direct processing, sharper activation, and clearer task entry more than live improvisation. Evening Spark is the deeper performance style underneath this read.",
+            "evidence": [
+              "Speed outruns agility in 2 of 3 meaningful visible sessions, and the overall report edge also favors speed (58.6 vs 49.5).",
+              "Looks sharp and fast early, especially when the work is shorter or more technical.",
+              "Speed clearly outruns endurance in the report.",
+              "The profile looks more activation-led than staying-power-led."
+            ]
+          },
+          "highlights": [
+            "Strongest sustained session: Puzzles Solving at 09:13 AM.",
+            "Fastest expression: Polgar Studies at speed 66.1.",
+            "Best adaptability: Polgar Studies at agility 61.4.",
+            "Best stamina: Puzzles Solving at endurance 60.1."
+          ]
+        },
+        {
+          "key": "other",
+          "label": "Other",
+          "activity": "Lecture",
+          "sessions": 1,
+          "bestWindow": "11:15 AM · 1h 0m 20s",
+          "summary": "Other tends to look best when Lecture is active, with its strongest sustained window at 1h 0m 20s.",
+          "persona": {
+            "name": "Intuitive-leaning",
+            "angle": "Slow-Burn Operator",
+            "summary": "Leans on feel, adjustment, and live pattern recognition more than straight-line activation. Slow-Burn Operator is the deeper performance style underneath this read.",
+            "evidence": [
+              "Agility (49.6) is stronger than speed (21.8), and the report language reinforces agility as the more repeatable edge.",
+              "Gets stronger after settling in and often produces the best work once the runway is long enough.",
+              "The report explicitly points to startup friction or a slower ramp-up pattern.",
+              "Long-form or focus-heavy evidence is present in the report."
+            ]
+          },
+          "highlights": [
+            "Strongest sustained session: Lecture at 11:15 AM.",
+            "Fastest expression: Lecture at speed 21.8.",
+            "Best adaptability: Lecture at agility 49.6.",
+            "Best stamina: Lecture at endurance 57.8."
+          ]
+        },
+        {
+          "key": "playing",
+          "label": "Playing",
+          "activity": "Classical Game Against Sanjay",
+          "sessions": 1,
+          "bestWindow": "02:37 PM · 4m 19s",
+          "summary": "Playing tends to look best when Classical Game Against Sanjay is active, with its strongest sustained window at 4m 19s.",
+          "persona": {
+            "name": "Analytical-leaning",
+            "angle": "Evening Spark",
+            "summary": "Leans on direct processing, sharper activation, and clearer task entry more than live improvisation. Evening Spark is the deeper performance style underneath this read.",
+            "evidence": [
+              "Speed (58.6) is stronger than agility (29.7), and the report language reinforces speed as the more repeatable edge.",
+              "Looks sharp and fast early, especially when the work is shorter or more technical.",
+              "Speed clearly outruns endurance in the report.",
+              "The profile looks more activation-led than staying-power-led."
+            ]
+          },
+          "highlights": [
+            "Strongest sustained session: Classical Game Against Sanjay at 02:37 PM.",
+            "Fastest expression: Classical Game Against Sanjay at speed 58.6.",
+            "Best adaptability: Classical Game Against Sanjay at agility 29.7.",
+            "Best stamina: Classical Game Against Sanjay at endurance 30.7."
+          ]
+        }
+      ],
+      "extractedSignals": {
+        "endurance": 60.1,
+        "speed": 66.1,
+        "agility": 61.4
+      }
+    },
+    "pdfUrl": "/uploads/seed-K_All_Behavioural_Patterns.pdf",
+    "ocrText": "Behavioural Patterns\nApr 07-Jun 30, 2026 - 39 unique reports\nPEAK ENDURANCE PEAK SPEED CORE PATTERN\n60.1 66.1 Agility held best\nPuzzles Solving Polgar Studies Focus used 87.0% of tracked time\nJune 12 - 09:13 AM May 25 + 07:02 PM Wellness used 13.0%, other 0.0%\nNo true content duplicates were found, but only 2 filename stems were reused across all 39 files.\nKEY INSIGHTS IN K ALL\nK All covers 39 unique sessions from April 07, 2026 through June 30, 2026, with no true duplicate content.\nThe main data-quality problem is filename reuse: only 2 normalized filenames were used to store all 39 different reports.\nPolgar Studies was the fastest session at 66.1 speed, while Puzzles Solving had the best endurance at 60.1.\nPolgar Studies carried the highest agility at 61.4, reinforcing that agility often stayed stronger than raw speed.\nThe slowest ramp-up appeared in Lecture at 368s, matching the broader pattern of startup friction across the folder.\nREPRESENTATIVE SESSIONS\nA high-signal cross-section of K All rather than the full 39-row ledger.\nSession Time Duration Spee Agility Enduran Reading\nd ce\nPolgar Studies May 25 - 07:02 30m 23s 66.1 43.6 36.5 Fastest session\nPM\nPuzzles Solving Jun 12 - 09:13 54m 46s 55.4 43.5 60.1 Strongest stamina\nAM\nPolgar Studies May 21 - 06:53 30m 20s 54.3 61.4 48.1 Best agility\nPM\nLecture Apr 13 - 11:15 1h Om 20s 218 49.6 57.8 Largest ramp-up delay\nAM\nClassical Game Against Jun 13 - 02:37 4m 19s 58.6 29.7 30.7 Shortest sample\nSanjay PM\nGame Against Raghav Jun 04 - 02:05 1h 45m 34.6 59.5 58.2 Longest session\nPM 18s\nPATTERN READ\nDirectional findings across the full K All set.\nFILES TIME MIX\nThe folder is unique by content but messy by filename Focus work dominated tracked time\nAll 39 files resolved to different session records. Focus sessions covered 20h 26m 12s of tracked time.\nOnly 2 normalized filename stems were reused across them. Wellness sessions covered 3h 3m 40s and other Om 0s.\nRAMP-UP\nSCORES\nStartup friction is the repeat problem\nAgility stayed more resilient than speed\nDeep-work ramp-up ranged from Os to 368s.\nTop agility reached 61.4, while top speed peaked at 66.1.\nThat makes settling into deep work a more stable issue than any single task\nStartup quality and endurance separated more often than agility did. label."
+  },
+  {
+    "id": "report-1783053750689",
+    "userName": "J",
+    "originalFileName": "jaidambareesh2008-gmail-com_deep-calculation_22-06-2026-09-34-57-am_report.pdf",
+    "createdAt": "2026-07-03T04:42:30.689Z",
+    "reportText": "Report generated on June 22, 2026 08:46 AM1 Deep Calculation Hello, this report summarizes your cognitive performance during your session on June 22, 2026, from 09:34 AM to 10:00 AM (25m 25s) Cognitive Performance Scores 50.8 Cognitive Speed How quickly your brain engages and begins processing Poor Average High 57.8 Cognitive Agility How smoothly your thinking adapts and flows during tasks Poor Average High 59.7 Cognitive Endurance How consistently you sustain cognitive performance over time Poor Average High Cognitive State Timeline Behavioural Metrics Avg Deep Work Duration95 s Average duration of deep work bouts (s). (Avg: 16.0-26.0) Deep Work %46.2% Proportion of session time spent in deep work bouts. (Avg: 38.0-46.8) Max Deep Work Duration316 s Longest uninterrupted deep work bout (s). (Avg: 24.1-43.1) Avg Recovery Duration8 s Average duration of recovery bouts (s). (Avg: 4.0-12.0) Recovery %10.6% Proportion of session time spent in recovery bouts. (Avg: 4.2-17.1) Deep Work Ramp-Up60 s Seconds to accumulate 10s of deep-work. Lower is better. (Avg: 8.0-40.0) Intensity Median25.1 Median Intensity score. (Avg: 56.9-57.5) Intensity Surges %16.7% Proportion of time with high intensity surges. (Avg: 0.0-1.0) Intrusion Rate1.0 /min Rate of entries into Fragmented state per minute. Lower is better. (Avg: 0.84-1.5) Efficiency Median59.8 Median Efficiency score. (Avg: 19.3-25.3) Efficiency Surges %60.6% Proportion of time with high efficiency surges. (Avg: 4.4-20.0) State Dynamics4.68 /min Cognitive-state switches per minute; higher means more dynamics. (Avg: 3.95-5.89) Report generated on June 22, 2026 08:46 AM2 Session Analysis Strong focus and creative immersion today. A slow ramp-up (60s) suggests it took time for your attention to 'warm up'. Top strength: Intensity Median. Area for improvement: Deep Work Ramp-Up. Quick next step: repeat what worked and aim to extend the scores by 10% in the next trial. Recommendations Insight from this session: Your balanced Cognitive Speed and Agility suggest a 'Flow' state where you are both absorbing and synthesizing effectively. Mindset to cultivate: Focus is a skill, not a switch. Consistent practice matters more than perfection.",
+    "evaluation": {
+      "userName": "J",
+      "reportTitle": "jaidambareesh2008-gmail-com_deep-calculation_22-06-2026-09-34-57-am_report.pdf",
+      "summary": "J's report suggests a Balanced Thinker core, a Morning Settler time persona, and a peak flow duration around 5m 16s.",
+      "primaryPersona": {
+        "name": "Balanced Thinker",
+        "angle": "Flow Builder",
+        "summary": "Uses analysis and intuition in a fairly even mix. Flow Builder is the deeper performance style underneath this read.",
+        "evidence": [
+          "Speed (50.8) and agility (57.8) are close, so neither analysis nor intuition fully dominates the profile.",
+          "Builds quality by warming into the work, then holding a balanced mix of analysis and flexibility.",
+          "The report explicitly describes a balanced speed-and-agility flow state.",
+          "A slow warm-up pattern is present, which suggests quality improves after entry."
+        ]
+      },
+      "timePersona": {
+        "label": "Morning Settler",
+        "window": "09:34 AM",
+        "summary": "The session started at 09:34 AM, so the strongest time-based read from this report is morning settler.",
+        "evidence": [
+          "The report explicitly states the session began at 09:34 AM.",
+          "There is not enough chart structure to override the session-time reading.",
+          "Morning Settler is the clearest time persona available from this report format."
+        ]
+      },
+      "peakFlow": {
+        "duration": "5m 16s",
+        "sessionName": "Max Deep Work Duration",
+        "timePersona": "Morning Settler",
+        "window": "09:34 AM",
+        "basis": "Max uninterrupted deep work bout",
+        "reading": "The clearest peak-flow signal in this report is the max uninterrupted deep work bout of 5m 16s."
+      },
+      "performanceEngine": [
+        {
+          "id": "endurance",
+          "label": "Endurance",
+          "score": 59.7,
+          "width": "100%",
+          "reading": "How well the user stays with the work once the session has begun."
+        },
+        {
+          "id": "speed",
+          "label": "Speed",
+          "score": 50.8,
+          "width": "85.09212730318258%",
+          "reading": "How quickly the user activates or moves through the work."
+        },
+        {
+          "id": "agility",
+          "label": "Agility",
+          "score": 57.8,
+          "width": "96.81742043551088%",
+          "reading": "How flexibly the user adapts inside the work without breaking it."
+        },
+        {
+          "id": "peak-flow",
+          "label": "Peak Flow Duration",
+          "score": "5m 16s",
+          "width": "100%",
+          "reading": "The clearest peak-flow signal in this report is the max uninterrupted deep work bout of 5m 16s."
+        }
+      ],
+      "modifiers": [
+        {
+          "label": "Activity",
+          "value": "Solving-heavy",
+          "note": "Solving-style work seems to reveal the clearest version of this persona."
+        },
+        {
+          "label": "Wellness",
+          "value": "Calm entry matters",
+          "note": "The report suggests the user performs better when the session begins from a steadier internal state."
+        },
+        {
+          "label": "Focus",
+          "value": "Focus amplifies the persona",
+          "note": "Cleaner focus makes the strongest persona more repeatable."
+        }
+      ],
+      "focusWellnessImpact": {
+        "focusPercent": null,
+        "wellnessPercent": null,
+        "impactSummary": "The session spent 46.2% in deep work and 10.6% in recovery. That suggests a performance pattern built on entering flow, resetting, and re-entering rather than one perfectly flat session.",
+        "timeSpent": [
+          {
+            "label": "Deep Work",
+            "value": "46.2%",
+            "note": "A meaningful part of the session was spent in deep work, which supports the student's stronger analytical or flow-building side."
+          },
+          {
+            "label": "Recovery",
+            "value": "10.6%",
+            "note": "Recovery time suggests the student needed resets inside the session rather than maintaining one unbroken state."
+          }
+        ]
+      },
+      "activityPersona": {
+        "label": "Balanced Thinker",
+        "driver": "Solving",
+        "summary": "Solving clearly dominates the visible activity mix. Within solving, the closest persona read is balanced thinker. Uses analysis and intuition in a fairly even mix. Day Carrier is the deeper performance style underneath this read.",
+        "evidence": [
+          "Solving accounts for 1 of 1 visible activity sessions.",
+          "Inside this branch, the activity-level signals read most like balanced thinker.",
+          "Deep Calculation is the only clearly named activity in this report, so the branch is being built from the single-session evidence.",
+          "Solving is where the cleanest cognitive signature is showing up most clearly.",
+          "Only one activity branch is visible in this report, so this activity persona is provisional."
+        ]
+      },
+      "coaching": {
+        "title": "Coach Balanced Thinker",
+        "body": "Balanced Thinker is the main identity, but Morning Settler is the strongest time-based expression from the report. 5m 16s is the clearest flow-duration cue to protect.",
+        "steps": [
+          "Protect the longer, calmer flow windows first.",
+          "Bias coaching toward morning settler when you want the strongest version of the user.",
+          "Use 5m 16s as the first duration target when building repeatable sessions."
+        ]
+      },
+      "chartSessions": [],
+      "reportCoverage": {
+        "totalSessions": null,
+        "visibleSessions": 0,
+        "summary": "Conclusions are being formed from the report summary, with 1 visible session available as evidence."
+      },
+      "metricEvidence": {
+        "speed": {
+          "metricKey": "speed",
+          "metricLabel": "Speed",
+          "activity": "Deep Calculation",
+          "branch": "Solving",
+          "value": 50.8,
+          "basis": "Report-level cognitive score",
+          "comparedTo": "Agility 57.8 and endurance 59.7.",
+          "timeWindow": "09:34 AM-10:00 AM",
+          "sessionDate": "June 22, 2026",
+          "explanation": "This report does not expose multiple chart rows, so speed is coming from the headline score.",
+          "source": "Cognitive Performance Scores"
+        },
+        "agility": {
+          "metricKey": "agility",
+          "metricLabel": "Agility",
+          "activity": "Deep Calculation",
+          "branch": "Solving",
+          "value": 57.8,
+          "basis": "Report-level cognitive score",
+          "comparedTo": "Speed 50.8 and endurance 59.7.",
+          "timeWindow": "09:34 AM-10:00 AM",
+          "sessionDate": "June 22, 2026",
+          "explanation": "This report does not expose multiple chart rows, so agility is coming from the headline score.",
+          "source": "Cognitive Performance Scores"
+        },
+        "endurance": {
+          "metricKey": "endurance",
+          "metricLabel": "Endurance",
+          "activity": "Deep Calculation",
+          "branch": "Solving",
+          "value": 59.7,
+          "basis": "Report-level cognitive score",
+          "comparedTo": "Speed 50.8 and agility 57.8.",
+          "timeWindow": "09:34 AM-10:00 AM",
+          "sessionDate": "June 22, 2026",
+          "explanation": "This report does not expose multiple chart rows, so endurance is coming from the headline score.",
+          "source": "Cognitive Performance Scores"
+        },
+        "peak-flow": {
+          "metricKey": "peak-flow",
+          "metricLabel": "Peak Flow Duration",
+          "activity": "Max Deep Work Duration",
+          "branch": "Other",
+          "value": "5m 16s",
+          "basis": "Max uninterrupted deep work bout",
+          "comparedTo": "Average deep work bout: 1m 35s.",
+          "timeWindow": "09:34 AM",
+          "sessionDate": "June 22, 2026",
+          "explanation": "The clearest peak-flow signal in this report is the max uninterrupted deep work bout of 5m 16s.",
+          "source": "Behavioural Metrics",
+          "averageValue": "1m 35s",
+          "peakValue": "5m 16s"
+        }
+      },
+      "activityBranches": [
+        {
+          "key": "solving",
+          "label": "Solving",
+          "activity": "Deep Calculation",
+          "sessions": 1,
+          "bestWindow": "09:34 AM",
+          "summary": "Deep Calculation is the only clearly named activity in this report, so the branch is being built from the single-session evidence.",
+          "persona": {
+            "name": "Balanced Thinker",
+            "angle": "Day Carrier",
+            "summary": "Uses analysis and intuition in a fairly even mix. Day Carrier is the deeper performance style underneath this read.",
+            "evidence": [
+              "Speed (44) and agility (46) are close, so neither analysis nor intuition fully dominates the profile.",
+              "Carries the bulk of the day and adapts well when the middle of the day gets heavy.",
+              "The report does not isolate one sharp time window strongly enough to replace the day-carrying default.",
+              "Agility and endurance both remain meaningful."
+            ]
+          },
+          "highlights": [
+            "Primary activity: Deep Calculation.",
+            "Time window: 09:34 AM.",
+            "Peak flow signal: 5m 16s."
+          ]
+        }
+      ],
+      "extractedSignals": {
+        "endurance": 59.7,
+        "speed": 50.8,
+        "agility": 57.8
+      }
+    },
+    "ocrText": ""
+  }
+]

@@ -577,16 +577,92 @@ body {
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
 }
 
+.student-tab-shell,
+.student-persona-grid,
+.student-activity-layout,
+.student-coach-layout,
+.comparison-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.student-persona-grid {
+  grid-template-columns: 0.9fr 1.45fr 0.95fr;
+  align-items: start;
+}
+
+.student-activity-layout,
+.student-coach-layout {
+  grid-template-columns: 1fr 1fr;
+}
+
+.comparison-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tab-strip {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tab-button {
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.tab-button.active {
+  color: #071018;
+  background: linear-gradient(135deg, var(--teal), var(--violet));
+  border-color: transparent;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+.student-report-list {
+  grid-template-columns: 1fr;
+}
+
+.persona-columns-triple {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.persona-page-main {
+  display: grid;
+  gap: 18px;
+}
+
+.student-orbit {
+  margin-bottom: 0;
+}
+
 @media (max-width: 1180px) {
   .masthead,
   .observatory-grid,
-  .report-list {
+  .report-list,
+  .student-persona-grid,
+  .student-activity-layout,
+  .student-coach-layout,
+  .comparison-grid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 920px) {
   .persona-columns,
+  .persona-columns-triple,
   .chart-session-grid {
     grid-template-columns: 1fr;
   }

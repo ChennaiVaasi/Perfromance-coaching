@@ -29,6 +29,13 @@ const credentialUsername = document.getElementById("credential-username");
 const credentialPassword = document.getElementById("credential-password");
 const credentialStatus = document.getElementById("credential-status");
 const adminUserList = document.getElementById("admin-user-list");
+const coachResourceForm = document.getElementById("coach-resource-form");
+const coachResourceTypeInput = document.getElementById("coach-resource-type");
+const coachResourceTitleInput = document.getElementById("coach-resource-title");
+const coachResourceUrlInput = document.getElementById("coach-resource-url");
+const coachResourceNotesInput = document.getElementById("coach-resource-notes");
+const coachResourceStatus = document.getElementById("coach-resource-status");
+const coachResourceList = document.getElementById("coach-resource-list");
 
 let reports = [];
 let activeReportId = "";
@@ -72,6 +79,11 @@ function setStatus(message, isError = false) {
 function setCredentialStatus(message, isError = false) {
   credentialStatus.textContent = message;
   credentialStatus.style.color = isError ? "#ff9c9c" : "";
+}
+
+function setCoachResourceStatus(message, isError = false) {
+  coachResourceStatus.textContent = message;
+  coachResourceStatus.style.color = isError ? "#ff9c9c" : "";
 }
 
 function renderAdminUsers(users) {
@@ -121,6 +133,39 @@ function renderEmptyState() {
   coachPlanTitle.textContent = "How to coach this user";
   coachPlanBody.textContent = "Upload or select a report to see the coaching plan.";
   coachingSteps.innerHTML = "";
+  coachResourceList.innerHTML = '<article class="modifier-card"><strong>No student selected</strong><p>Select a report to assign resources.</p></article>';
+  setCoachResourceStatus("");
+}
+
+function renderCoachResources(resources = []) {
+  coachResourceList.innerHTML = resources.length
+    ? resources
+        .map(
+          (resource) => `
+            <article class="modifier-card">
+              <strong>${resource.type}: ${resource.title}</strong>
+              <p>${resource.notes || "Coach-assigned support item."}</p>
+              ${resource.url ? `<a class="engine-link" href="${resource.url}" target="_blank" rel="noreferrer">Open resource</a>` : ""}
+            </article>
+          `
+        )
+        .join("")
+    : '<article class="modifier-card"><strong>No suggestions yet</strong><p>Assign audio, video, or an activity for this student.</p></article>';
+}
+
+async function loadCoachResources(userName) {
+  if (!userName) {
+    renderCoachResources([]);
+    return;
+  }
+
+  const response = await apiFetch(`/api/students/${encodeURIComponent(userName)}/resources`);
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.error || "Could not load coach resources.");
+  }
+
+  renderCoachResources(payload.resources || []);
 }
 
 function buildEvidenceLink(reportId, metricKey) {
@@ -139,6 +184,7 @@ function renderSummary(report) {
   const { evaluation } = report;
   const items = [
     ["Primary persona", evaluation.primaryPersona.name],
+    ["Activity persona", evaluation.activityPersona?.label || "Pending"],
     ["Time persona", evaluation.timePersona?.label || "Mixed"],
     ["Peak flow duration", evaluation.peakFlow?.duration || "Unknown"],
     ["Peak flow window", evaluation.peakFlow?.window || evaluation.timePersona?.window || "Unknown"]
@@ -158,7 +204,7 @@ function renderSummary(report) {
 
 function renderPersona(report) {
   const { evaluation } = report;
-  const { primaryPersona, timePersona } = evaluation;
+  const { primaryPersona, timePersona, activityPersona } = evaluation;
   const consumerRead = buildPlainPersonaRead(evaluation);
 
   coachTitle.textContent = `${report.userName} - ${primaryPersona.name}`;
@@ -187,6 +233,11 @@ function renderPersona(report) {
       <section>
         <h3>Why this persona</h3>
         <ul>${primaryPersona.evidence.map((item) => `<li>${item}</li>`).join("")}</ul>
+      </section>
+      <section>
+        <h3>Activity persona</h3>
+        <p><strong>${activityPersona?.label || "Pending"}</strong> ${activityPersona?.summary || "No activity persona could be formed yet."}</p>
+        <ul>${(activityPersona?.evidence || []).map((item) => `<li>${item}</li>`).join("")}</ul>
       </section>
       <section>
         <h3>Time-based read</h3>
@@ -328,6 +379,10 @@ function renderReport(report) {
   renderModifiers(report);
   renderFocusWellness(report);
   renderCoaching(report);
+  loadCoachResources(report.userName).catch((error) => {
+    setCoachResourceStatus(error.message, true);
+    renderCoachResources([]);
+  });
 }
 
 function renderReportList() {
@@ -446,6 +501,40 @@ studentCredentialForm.addEventListener("submit", async (event) => {
   credentialPassword.value = "";
   setCredentialStatus("Student login saved.");
   renderAdminUsers(payload.users || []);
+});
+
+coachResourceForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const activeReport = reports.find((item) => item.id === activeReportId);
+  if (!activeReport) {
+    setCoachResourceStatus("Choose a student report first.", true);
+    return;
+  }
+
+  setCoachResourceStatus("Assigning resource...");
+  const response = await apiFetch(`/api/admin/students/${encodeURIComponent(activeReport.userName)}/resources`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: coachResourceTypeInput.value.trim(),
+      title: coachResourceTitleInput.value.trim(),
+      url: coachResourceUrlInput.value.trim(),
+      notes: coachResourceNotesInput.value.trim()
+    })
+  });
+
+  const payload = await response.json();
+  if (!response.ok) {
+    setCoachResourceStatus(payload.error || "Could not assign resource.", true);
+    return;
+  }
+
+  coachResourceTypeInput.value = "";
+  coachResourceTitleInput.value = "";
+  coachResourceUrlInput.value = "";
+  coachResourceNotesInput.value = "";
+  setCoachResourceStatus("Resource assigned.");
+  renderCoachResources(payload.resources || []);
 });
 
 loadReports().catch((error) => {

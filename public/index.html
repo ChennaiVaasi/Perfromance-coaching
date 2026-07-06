@@ -136,7 +136,7 @@
             <div class="section-header">
               <div>
                 <p class="panel-label">Activity Branches</p>
-                <h2>Games, puzzles, study and more</h2>
+                <h2>Playing, solving, and other</h2>
               </div>
             </div>
             <div class="chart-session-grid" id="activity-branch-grid"></div>
@@ -152,6 +152,20 @@
               <p class="panel-label">Next Steps</p>
               <ul class="coach-steps" id="coaching-steps"></ul>
             </div>
+          </article>
+
+          <article class="panel">
+            <p class="panel-label">Coach Suggestions</p>
+            <h2>Assign audio, video, or activities</h2>
+            <form id="coach-resource-form" class="upload-form">
+              <input id="coach-resource-type" type="text" placeholder="Type: Audio, Video, Activity" />
+              <input id="coach-resource-title" type="text" placeholder="Title" />
+              <input id="coach-resource-url" type="text" placeholder="Link (optional)" />
+              <input id="coach-resource-notes" type="text" placeholder="Why this is assigned" />
+              <button type="submit">Assign To Current Student</button>
+            </form>
+            <p id="coach-resource-status" class="status-text"></p>
+            <div class="modifier-grid" id="coach-resource-list"></div>
           </article>
 
           <article class="panel">

@@ -20,6 +20,7 @@ const DATA_DIR = path.join(__dirname, "data");
 const REPORTS_PATH = path.join(DATA_DIR, "reports.json");
 const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 const USERS_PATH = path.join(DATA_DIR, "users.json");
+const SUGGESTIONS_PATH = path.join(DATA_DIR, "suggestions.json");
 const ADMIN_USER = "coach";
 const ADMIN_PASSWORD = "6464";
 const sessions = new Map();
@@ -43,6 +44,10 @@ function ensureDataStore() {
   if (!fs.existsSync(USERS_PATH)) {
     fs.writeFileSync(USERS_PATH, "[]", "utf8");
   }
+
+  if (!fs.existsSync(SUGGESTIONS_PATH)) {
+    fs.writeFileSync(SUGGESTIONS_PATH, "[]", "utf8");
+  }
 }
 
 function readReports() {
@@ -63,6 +68,16 @@ function readUsers() {
 function writeUsers(users) {
   ensureDataStore();
   fs.writeFileSync(USERS_PATH, JSON.stringify(users, null, 2), "utf8");
+}
+
+function readSuggestions() {
+  ensureDataStore();
+  return JSON.parse(fs.readFileSync(SUGGESTIONS_PATH, "utf8"));
+}
+
+function writeSuggestions(suggestions) {
+  ensureDataStore();
+  fs.writeFileSync(SUGGESTIONS_PATH, JSON.stringify(suggestions, null, 2), "utf8");
 }
 
 function seedUsersFromReports() {
@@ -101,6 +116,17 @@ function requireAdmin(req, res, next) {
   const session = getSession(req);
   if (!session || session.role !== "admin") {
     res.status(401).json({ error: "Admin access required." });
+    return;
+  }
+
+  req.session = session;
+  next();
+}
+
+function requireStudent(req, res, next) {
+  const session = getSession(req);
+  if (!session || session.role !== "student") {
+    res.status(401).json({ error: "Student access required." });
     return;
   }
 
@@ -152,6 +178,111 @@ function requireReportAccess(req, res, next) {
   }
 
   res.status(403).json({ error: "You can only access your own reports." });
+}
+
+function parseDurationToSeconds(value) {
+  if (!value) return 0;
+  const match = String(value).match(/(?:(\d+)h\s*)?(\d+)m\s*(\d+)s/i);
+  if (!match) return 0;
+  const hours = Number(match[1] || 0);
+  const minutes = Number(match[2] || 0);
+  const seconds = Number(match[3] || 0);
+  return hours * 3600 + minutes * 60 + seconds;
+}
+
+function enrichReportWithHistory(report, reportsForUser) {
+  const flowScores = reportsForUser
+    .map((item) => ({
+      id: item.id,
+      seconds: parseDurationToSeconds(item.evaluation?.peakFlow?.peakValue || item.evaluation?.peakFlow?.duration)
+    }))
+    .filter((item) => item.seconds > 0)
+    .sort((a, b) => a.seconds - b.seconds);
+
+  const enduranceScores = reportsForUser
+    .map((item) => ({
+      id: item.id,
+      score: Number(item.evaluation?.extractedSignals?.endurance || 0)
+    }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => a.score - b.score);
+
+  const currentFlow = flowScores.find((item) => item.id === report.id);
+  const currentEndurance = enduranceScores.find((item) => item.id === report.id);
+  const flowRank = currentFlow ? flowScores.findIndex((item) => item.id === report.id) + 1 : 0;
+  const enduranceRank = currentEndurance ? enduranceScores.findIndex((item) => item.id === report.id) + 1 : 0;
+  const flowPercentile = flowScores.length > 1 && flowRank ? Math.round(((flowRank - 1) / (flowScores.length - 1)) * 100) : flowRank ? 100 : null;
+  const endurancePercentile = enduranceScores.length > 1 && enduranceRank ? Math.round(((enduranceRank - 1) / (enduranceScores.length - 1)) * 100) : enduranceRank ? 100 : null;
+
+  return {
+    ...report,
+    historyComparison: {
+      reportCount: reportsForUser.length,
+      flowPercentile,
+      endurancePercentile,
+      flowRank,
+      enduranceRank
+    }
+  };
+}
+
+async function processUploadedReports({ userName, files }) {
+  const reports = readReports();
+  const createdReports = [];
+  const skippedFiles = [];
+
+  for (const file of files) {
+    try {
+      const parsed = await pdf(file.buffer);
+      const baseReportText = (parsed.text || "").replace(/\s+/g, " ").trim();
+      const ocrText = await extractOcrTextFromPdfBuffer(file.buffer, { maxPages: 3 });
+      const reportText = [baseReportText, ocrText.replace(/\s+/g, " ").trim()].filter(Boolean).join(" ");
+
+      if (!reportText) {
+        skippedFiles.push({
+          fileName: file.originalname,
+          reason: "No usable text could be extracted."
+        });
+        continue;
+      }
+
+      const evaluation = evaluatePersonaFromReport({
+        userName,
+        reportText,
+        ocrText,
+        originalFileName: file.originalname
+      });
+
+      const uploadFileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+      const uploadPath = path.join(UPLOADS_DIR, uploadFileName);
+      fs.writeFileSync(uploadPath, file.buffer);
+
+      const record = {
+        id: `report-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        userName,
+        originalFileName: file.originalname,
+        createdAt: new Date().toISOString(),
+        pdfUrl: `/uploads/${uploadFileName}`,
+        reportText,
+        ocrText,
+        evaluation
+      };
+
+      reports.push(record);
+      createdReports.push(record);
+    } catch (fileError) {
+      skippedFiles.push({
+        fileName: file.originalname,
+        reason: fileError.message
+      });
+    }
+  }
+
+  if (createdReports.length) {
+    writeReports(reports);
+  }
+
+  return { createdReports, skippedFiles };
 }
 
 app.post("/api/auth/admin/login", (req, res) => {
@@ -213,11 +344,48 @@ app.get("/api/students/:userName/reports", requireStudentOrAdmin, (req, res) => 
   const reports = readReports()
     .filter((report) => report.userName.toLowerCase() === requestedUser)
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  const enrichedReports = reports.map((report) => enrichReportWithHistory(report, reports));
 
   res.json({
     userName: req.params.userName,
-    reports
+    reports: enrichedReports
   });
+});
+
+app.get("/api/students/:userName/resources", requireStudentOrAdmin, (req, res) => {
+  const requestedUser = (req.params.userName || "").trim().toLowerCase();
+  const resources = readSuggestions()
+    .filter((item) => item.studentName.toLowerCase() === requestedUser)
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+
+  res.json({ userName: req.params.userName, resources });
+});
+
+app.post("/api/admin/students/:userName/resources", requireAdmin, (req, res) => {
+  const studentName = (req.params.userName || "").trim();
+  const type = (req.body.type || "").trim() || "Activity";
+  const title = (req.body.title || "").trim();
+  const url = (req.body.url || "").trim();
+  const notes = (req.body.notes || "").trim();
+
+  if (!studentName || !title) {
+    res.status(400).json({ error: "Student name and title are required." });
+    return;
+  }
+
+  const suggestions = readSuggestions();
+  const record = {
+    id: `resource-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    studentName,
+    type,
+    title,
+    url,
+    notes,
+    createdAt: new Date().toISOString()
+  };
+  suggestions.push(record);
+  writeSuggestions(suggestions);
+  res.status(201).json({ resource: record, resources: suggestions.filter((item) => item.studentName.toLowerCase() === studentName.toLowerCase()) });
 });
 
 app.get("/api/reports/:reportId", requireReportAccess, (req, res) => {
@@ -275,63 +443,12 @@ app.post("/api/reports/upload", requireAdmin, upload.array("reports"), async (re
       return;
     }
 
-    const reports = readReports();
-    const createdReports = [];
-    const skippedFiles = [];
-
-    for (const file of files) {
-      try {
-        const parsed = await pdf(file.buffer);
-        const baseReportText = (parsed.text || "").replace(/\s+/g, " ").trim();
-        const ocrText = await extractOcrTextFromPdfBuffer(file.buffer, { maxPages: 3 });
-        const reportText = [baseReportText, ocrText.replace(/\s+/g, " ").trim()].filter(Boolean).join(" ");
-
-        if (!reportText) {
-          skippedFiles.push({
-            fileName: file.originalname,
-            reason: "No usable text could be extracted."
-          });
-          continue;
-        }
-
-        const evaluation = evaluatePersonaFromReport({
-          userName,
-          reportText,
-          ocrText,
-          originalFileName: file.originalname
-        });
-
-        const uploadFileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
-        const uploadPath = path.join(UPLOADS_DIR, uploadFileName);
-        fs.writeFileSync(uploadPath, file.buffer);
-
-        const record = {
-          id: `report-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          userName,
-          originalFileName: file.originalname,
-          createdAt: new Date().toISOString(),
-          pdfUrl: `/uploads/${uploadFileName}`,
-          reportText,
-          ocrText,
-          evaluation
-        };
-
-        reports.push(record);
-        createdReports.push(record);
-      } catch (fileError) {
-        skippedFiles.push({
-          fileName: file.originalname,
-          reason: fileError.message
-        });
-      }
-    }
+    const { createdReports, skippedFiles } = await processUploadedReports({ userName, files });
 
     if (!createdReports.length) {
       res.status(400).json({ error: "The uploaded PDFs could not be read into usable reports." });
       return;
     }
-
-    writeReports(reports);
 
     res.status(201).json({
       reports: createdReports,
@@ -340,6 +457,31 @@ app.post("/api/reports/upload", requireAdmin, upload.array("reports"), async (re
     });
   } catch (error) {
     res.status(500).json({ error: `Failed to process report: ${error.message}` });
+  }
+});
+
+app.post("/api/student/reports/upload", requireStudent, upload.array("reports"), async (req, res) => {
+  try {
+    const userName = req.session.studentName;
+    const files = (req.files || []).filter((file) => file.mimetype === "application/pdf" || /\.pdf$/i.test(file.originalname));
+    if (!files.length) {
+      res.status(400).json({ error: "At least one PDF report is required." });
+      return;
+    }
+
+    const { createdReports, skippedFiles } = await processUploadedReports({ userName, files });
+    if (!createdReports.length) {
+      res.status(400).json({ error: "The uploaded PDFs could not be read into usable reports." });
+      return;
+    }
+
+    res.status(201).json({
+      reports: createdReports,
+      count: createdReports.length,
+      skippedFiles
+    });
+  } catch (error) {
+    res.status(500).json({ error: `Failed to process student upload: ${error.message}` });
   }
 });
 

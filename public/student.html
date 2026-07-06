@@ -22,95 +22,119 @@
 
       <section class="masthead" id="student-app-shell" hidden>
         <div class="masthead-copy">
-          <p class="kicker">Student View</p>
-          <h1 id="student-hero-title">Your report, your patterns, your next step.</h1>
+          <p class="kicker">Student Workspace</p>
+          <h1 id="student-hero-title">Upload reports, read your persona, then track what changes.</h1>
           <p class="strapline" id="student-hero-copy">
-            This page only loads one student's reports so the experience stays focused on personal patterns, evidence, and growth.
+            Your page has three tabs: persona, activity comparisons, and coach suggestions. Everything stays scoped to your own reports.
           </p>
         </div>
 
         <aside class="upload-dock panel">
-          <p class="panel-label">Student Access</p>
+          <p class="panel-label">Student Status</p>
           <p id="student-status" class="status-text"></p>
         </aside>
       </section>
 
-      <section class="hero-orbit">
-        <div class="pulse-orb">
-          <div class="orb-ring orb-ring-a"></div>
-          <div class="orb-ring orb-ring-b"></div>
-          <div class="orb-core">
-            <span id="student-signature-label">Student Persona</span>
-            <strong id="student-signature-headline">Choose a student</strong>
-            <p id="student-signature-support">Only this student's reports will be shown here.</p>
-          </div>
+      <section class="student-tab-shell" id="student-tab-shell" hidden>
+        <div class="tab-strip panel">
+          <button class="tab-button active" data-student-tab="persona" type="button">Page 1: Persona</button>
+          <button class="tab-button" data-student-tab="activity" type="button">Page 2: Activity</button>
+          <button class="tab-button" data-student-tab="coach" type="button">Page 3: Coach Suggestions</button>
         </div>
-      </section>
 
-      <section class="observatory-grid">
-        <aside class="left-rail panel">
-          <p class="panel-label">Student Ledger</p>
-          <div class="summary-stack" id="student-summary-stack"></div>
-          <div class="thesis-block">
-            <p class="panel-label">Current Read</p>
-            <h2 id="student-title">Choose a student</h2>
-            <p id="student-summary">This page stays scoped to one student's reports only.</p>
-            <p class="micro-meta" id="student-session-count"></p>
+        <section class="tab-panel active" data-student-panel="persona">
+          <div class="student-persona-grid">
+            <article class="panel">
+              <div class="section-header">
+                <div>
+                  <p class="panel-label">Upload Reports</p>
+                  <h2>Import a folder, batch, or single PDF</h2>
+                </div>
+              </div>
+              <form id="student-upload-form" class="upload-form">
+                <label class="file-picker">
+                  <span>Choose PDFs</span>
+                  <input id="student-report-file" name="reports" type="file" accept="application/pdf" multiple />
+                </label>
+                <label class="file-picker">
+                  <span>Choose Folder</span>
+                  <input id="student-report-folder" name="reportFolder" type="file" webkitdirectory directory multiple />
+                </label>
+                <button type="submit">Upload Reports</button>
+              </form>
+              <p id="student-upload-status" class="status-text"></p>
+
+              <div class="summary-stack" id="student-summary-stack"></div>
+            </article>
+
+            <article class="panel persona-page-main">
+              <section class="hero-orbit student-orbit">
+                <div class="pulse-orb">
+                  <div class="orb-ring orb-ring-a"></div>
+                  <div class="orb-ring orb-ring-b"></div>
+                  <div class="orb-core">
+                    <span id="student-signature-label">Student Persona</span>
+                    <strong id="student-signature-headline">Choose a report</strong>
+                    <p id="student-signature-support">Upload or choose one of your reports to see your strongest persona.</p>
+                  </div>
+                </div>
+              </section>
+
+              <div class="persona-signature" id="student-persona-card">
+                <div class="loading">Upload or select a report to view your persona.</div>
+              </div>
+
+              <div class="engine-grid" id="student-engine-grid"></div>
+
+              <div class="mode-theatre" id="student-peak-flow-panel"></div>
+            </article>
+
+            <article class="panel">
+              <p class="panel-label">Your Reports</p>
+              <h2 id="student-title">Choose a report</h2>
+              <p id="student-summary">This page stays scoped to one student's reports only.</p>
+              <p class="micro-meta" id="student-session-count"></p>
+              <div id="student-report-list" class="report-list student-report-list"></div>
+            </article>
           </div>
-        </aside>
-
-        <section class="center-stage">
-          <article class="panel observatory-panel">
-            <div class="section-header">
-              <div>
-                <p class="panel-label">Your Persona</p>
-                <h2>What the report suggests</h2>
-              </div>
-            </div>
-            <div class="persona-signature" id="student-persona-card">
-              <div class="loading">No student selected yet.</div>
-            </div>
-          </article>
-
-          <article class="panel observatory-panel">
-            <div class="section-header">
-              <div>
-                <p class="panel-label">Your Engine</p>
-                <h2>Metrics and peak flow</h2>
-              </div>
-            </div>
-            <div class="mode-theatre" id="student-peak-flow-panel"></div>
-            <div class="engine-grid" id="student-engine-grid"></div>
-          </article>
-
-          <article class="panel observatory-panel">
-            <div class="section-header">
-              <div>
-                <p class="panel-label">Your Activities</p>
-                <h2>Which work suits you best</h2>
-              </div>
-            </div>
-            <div class="chart-session-grid" id="student-activity-grid"></div>
-          </article>
         </section>
 
-        <aside class="right-rail">
-          <article class="panel">
-            <p class="panel-label">Student Plan</p>
-            <h2 id="student-plan-title">What to work on next</h2>
-            <p id="student-plan-body">Choose a student to see the current coaching read.</p>
-            <div class="coach-steps-wrap">
-              <p class="panel-label">Next Steps</p>
-              <ul class="coach-steps" id="student-steps"></ul>
-            </div>
-          </article>
+        <section class="tab-panel" data-student-panel="activity">
+          <div class="student-activity-layout">
+            <article class="panel">
+              <p class="panel-label">Activity Comparison</p>
+              <h2>How this report compares to your older reports</h2>
+              <p id="student-activity-summary" class="strapline">Choose a report to compare flow and endurance against your own history.</p>
+              <div class="comparison-grid" id="student-comparison-grid"></div>
+            </article>
 
-          <article class="panel">
-            <p class="panel-label">Your Reports</p>
-            <h2>Only your uploads</h2>
-            <div id="student-report-list" class="report-list"></div>
-          </article>
-        </aside>
+            <article class="panel">
+              <p class="panel-label">Activity Branches</p>
+              <h2>Playing, solving, and other</h2>
+              <div class="chart-session-grid" id="student-activity-grid"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-student-panel="coach">
+          <div class="student-coach-layout">
+            <article class="panel">
+              <p class="panel-label">Coach Suggestions</p>
+              <h2 id="student-plan-title">What to work on next</h2>
+              <p id="student-plan-body">Coach suggestions and assigned resources will appear here.</p>
+              <div class="coach-steps-wrap">
+                <p class="panel-label">Current Coaching Read</p>
+                <ul class="coach-steps" id="student-steps"></ul>
+              </div>
+            </article>
+
+            <article class="panel">
+              <p class="panel-label">Assigned Resources</p>
+              <h2>Audio, video, and activities from your coach</h2>
+              <div class="modifier-grid" id="student-resource-list"></div>
+            </article>
+          </div>
+        </section>
       </section>
     </main>
     <script src="./auth.js"></script>
