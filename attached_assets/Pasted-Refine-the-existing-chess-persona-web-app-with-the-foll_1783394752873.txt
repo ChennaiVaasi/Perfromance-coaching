@@ -1,0 +1,166 @@
+Refine the existing chess persona web app with the following latest changes only:
+
+1. Persona must be whole-student, not report-level
+- Remove report-level persona framing from the main persona surfaces.
+- The Persona page should describe the student’s complete experience, not one selected report.
+- Selected reports may still be used for comparison/evidence/activity detail, but not for defining identity.
+
+2. Main persona should use Playing only
+- Compute the main whole-student persona using only Playing reports.
+- Keep the same labels:
+  - Analytical-leaning
+  - Intuitive-leaning
+  - Dual-mode
+  - Balanced Thinker
+
+3. Leaning logic
+- If speed/agility difference is greater than 10, do not call it balanced.
+- If agility beats speed in 60%+ of relevant reports, lean Intuitive.
+- If speed beats agility in 60%+ of relevant reports, lean Analytical.
+- Allow Dual-mode when both sides win meaningfully across contexts.
+
+4. Add separate Playing persona
+- Compute a dedicated Playing persona across all Playing reports.
+- Use the same persona labels as above.
+- Surface it separately from the whole-user persona.
+
+5. Make all main persona sections whole-student only
+Update the coach and student persona surfaces so they no longer talk about one selected report.
+These sections must become whole-student:
+- persona summary
+- time/timing read
+- peak flow
+- engine metrics
+- fragmentation summary
+
+They should instead show:
+- whole-user persona
+- playing persona
+- dominant time pattern across history
+- dominant fragmentation pattern across history
+- best historical peak flow
+- average speed across history
+- average agility across history
+- average endurance across history
+- peak endurance across history
+- all activity personas
+- total report count
+
+6. Peak flow must be whole-student on persona page
+- Do not show “peak in that report” on the main persona surface.
+- Show best historical peak flow for the student instead.
+- Keep report-level peak flow only inside comparison/activity/report detail views.
+
+7. Engine must be whole-student on persona page
+- Use whole-student averages:
+  - average speed
+  - average agility
+  - average endurance
+- Also show:
+  - peak endurance
+  - best historical peak flow
+
+8. Time persona label cleanup
+- Replace “Day Carrier” with “Midday Driver”.
+- Keep consumer-friendly time labels:
+  - Morning Settler
+  - Midday Driver
+  - Evening Spark
+
+9. Activity classification improvements
+Keep the current smart bucket structure and improve it where needed:
+- Playing:
+  - game
+  - classical game
+  - rapid game
+  - blitz
+  - match
+  - pregame
+  - before game
+  - position to play
+  - ptp
+  - vs
+  - against
+- Solving:
+  - puzzle
+  - solving
+  - calculation
+  - tactics
+  - endgame
+  - analysis
+  - polgar
+- Wellness:
+  - meditation
+  - relaxation
+  - wellness
+  - walk
+  - recovery
+  - reset
+  - breathing
+  - mindfulness
+- Training:
+  - training
+  - revise
+  - endings
+  - opening
+  - book
+  - drill
+  - on the board
+  - observing thoughts
+  - absorbing thoughts
+  - lecture
+  - study
+- Other:
+  - only true leftovers
+
+10. Single-session branch copy cleanup
+If a branch is built from one report, do not use awkward parser wording like:
+- “Classical Game Against Sanjay is the only clearly named activity in this report...”
+Instead use branch-aware copy such as:
+- “Playing is the only clearly visible branch in this report, so this persona read is being built from the single-session evidence around Classical Game Against Sanjay.”
+
+11. Coach dashboard grouping
+- Group the coach dashboard by student, not by report.
+- Show one card per student.
+- Each student card should show:
+  - student name
+  - whole-user persona
+  - playing persona
+  - report count
+
+12. Student Persona tab behavior
+- Persona tab should show only the complete student profile.
+- It must not describe the selected report as identity.
+- It should use the full report history and all relevant activity summaries.
+
+13. Report cards on student side
+- Report cards may still list time / flow / report metadata.
+- They should not imply that each report is a different persona identity.
+
+14. Copy constraints
+On the main persona surfaces, do not use report-scoped wording like:
+- “This report suggests...”
+- “The session started at...”
+- “The clearest peak-flow signal in this report...”
+- “This report is day carrier...”
+
+Instead use whole-student wording like:
+- whole-user persona
+- playing persona
+- dominant time pattern across history
+- best historical peak flow
+- complete student profile
+- full history, not one selected report
+
+15. Code-only change
+- Do not provide or depend on recalculated data blobs.
+- Make these changes in code only.
+- Let the app compute the profile dynamically from stored reports.
+
+Files likely involved:
+- src/persona-engine.js
+- server.js
+- public/app.js
+- public/student.js
+- public/index.html
+- public/student.html
