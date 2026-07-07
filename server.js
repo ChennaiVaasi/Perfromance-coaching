@@ -4,7 +4,7 @@ const pdf = require("pdf-parse");
 const fs = require("fs");
 const path = require("path");
 
-const { evaluatePersonaFromReport } = require("./src/persona-engine");
+const { evaluatePersonaFromReport, computeWholeStudentProfile } = require("./src/persona-engine");
 const { extractOcrTextFromPdfBuffer } = require("./src/report-ocr");
 
 const app = express();
@@ -435,6 +435,25 @@ app.get("/api/reports/:reportId/activities/:activityKey", requireReportAccess, (
     }
 
     res.json({ report: req.report, branch });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/students/:userName/profile", requireStudentOrAdmin, (req, res) => {
+  try {
+    const requestedUser = (req.params.userName || "").trim().toLowerCase();
+    const reports = readReports()
+      .filter((report) => report.userName.toLowerCase() === requestedUser)
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+
+    const profile = computeWholeStudentProfile(reports);
+    if (!profile) {
+      res.status(404).json({ error: "No reports found for this student." });
+      return;
+    }
+
+    res.json({ userName: req.params.userName, profile });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -39,38 +39,7 @@ const coachResourceStatus = document.getElementById("coach-resource-status");
 const coachResourceList = document.getElementById("coach-resource-list");
 
 let reports = [];
-let activeReportId = "";
-
-function buildPlainPersonaRead(evaluation) {
-  const { primaryPersona, timePersona, extractedSignals, peakFlow } = evaluation;
-  const speed = extractedSignals?.speed ?? 0;
-  const agility = extractedSignals?.agility ?? 0;
-  const endurance = extractedSignals?.endurance ?? 0;
-
-  let styleRead = "balanced";
-  if (agility >= speed + 5) {
-    styleRead = "adaptive";
-  } else if (speed >= agility + 5) {
-    styleRead = "fast-activation";
-  } else if (endurance >= speed && endurance >= agility) {
-    styleRead = "steady";
-  }
-
-  const styleLine =
-    styleRead === "adaptive"
-      ? "This profile looks more adaptive than rigid, meaning the user can think, adjust, and keep the work moving once settled."
-      : styleRead === "fast-activation"
-        ? "This profile looks activation-led, meaning the user tends to rely on quick starts and fast engagement."
-        : styleRead === "steady"
-          ? "This profile looks steadier than explosive, meaning the user does better by holding quality over time."
-          : "This profile looks balanced, meaning the user is not relying on only one mode of performance.";
-
-  return {
-    title: `${primaryPersona.name} in plain language`,
-    body: `${primaryPersona.summary} ${styleLine}`,
-    accent: `Best expressed around ${timePersona?.label || "mixed time windows"} with a repeatable flow window near ${peakFlow?.duration || "the detected peak duration"}.`
-  };
-}
+let activeStudentName = "";
 
 function setStatus(message, isError = false) {
   formStatus.textContent = message;
@@ -116,25 +85,25 @@ async function loadAdminUsers() {
 
 function renderEmptyState() {
   summaryStack.innerHTML = "";
-  personaCard.innerHTML = '<div class="placeholder-card">No report selected yet.</div>';
-  peakFlowPanel.innerHTML = '<div class="placeholder-card">Upload a PDF to read time persona and peak flow duration.</div>';
+  personaCard.innerHTML = '<div class="placeholder-card">No student selected yet.</div>';
+  peakFlowPanel.innerHTML = '<div class="placeholder-card">Select a student to see their whole-student peak flow.</div>';
   engineGrid.innerHTML = "";
   chartSessionGrid.innerHTML = "";
   activityBranchGrid.innerHTML = "";
   modifierGrid.innerHTML = "";
   focusWellnessSummary.textContent = "";
   timeSpentGrid.innerHTML = "";
-  signatureLabel.textContent = "Time Signature";
-  signatureHeadline.textContent = "Upload a report";
-  signatureSupport.textContent = "The app will detect the strongest time persona and peak flow duration.";
-  coachTitle.textContent = "Choose a report to inspect";
+  signatureLabel.textContent = "Student Persona";
+  signatureHeadline.textContent = "Select a student";
+  signatureSupport.textContent = "The app will show the whole-student persona computed from the full report history.";
+  coachTitle.textContent = "Choose a student to inspect";
   coachSummary.textContent =
-    "The coach side will show the strongest persona, the time-based version of that persona, and the peak flow duration pulled from the report chart.";
+    "The coach side will show the whole-student persona, the playing persona, and the dominant time pattern across the full history.";
   coachSessionCount.textContent = "";
-  coachPlanTitle.textContent = "How to coach this user";
-  coachPlanBody.textContent = "Upload or select a report to see the coaching plan.";
+  coachPlanTitle.textContent = "How to coach this student";
+  coachPlanBody.textContent = "Select a student to see the whole-student coaching profile.";
   coachingSteps.innerHTML = "";
-  coachResourceList.innerHTML = '<article class="modifier-card"><strong>No student selected</strong><p>Select a report to assign resources.</p></article>';
+  coachResourceList.innerHTML = '<article class="modifier-card"><strong>No student selected</strong><p>Select a student to assign resources.</p></article>';
   setCoachResourceStatus("");
 }
 
@@ -177,18 +146,17 @@ function buildActivityLink(reportId, activityKey) {
   return `/activity.html?report=${encodeURIComponent(reportId)}&activity=${encodeURIComponent(activityKey)}`;
 }
 
-function buildStudentLink(userName, reportId) {
-  return `/student.html?user=${encodeURIComponent(userName)}&report=${encodeURIComponent(reportId)}`;
+function buildStudentLink(userName) {
+  return `/student.html?user=${encodeURIComponent(userName)}`;
 }
 
-function renderSummary(report) {
-  const { evaluation } = report;
+function renderSummaryFromProfile(userName, profile) {
   const items = [
-    ["Primary persona", evaluation.primaryPersona.name],
-    ["Activity persona", evaluation.activityPersona?.label || "Pending"],
-    ["Time persona", evaluation.timePersona?.label || "Mixed"],
-    ["Peak flow duration", evaluation.peakFlow?.duration || "Unknown"],
-    ["Peak flow window", evaluation.peakFlow?.window || evaluation.timePersona?.window || "Unknown"]
+    ["Whole-student persona", profile.wholeUserPersona.name],
+    ["Playing persona", profile.playingPersona ? profile.playingPersona.name : "Insufficient Playing data"],
+    ["Dominant time pattern", profile.dominantTimePattern],
+    ["Best historical peak flow", profile.bestPeakFlow ? profile.bestPeakFlow.duration : "Pending"],
+    ["Report count", String(profile.reportCount)]
   ];
 
   summaryStack.innerHTML = items
@@ -203,133 +171,170 @@ function renderSummary(report) {
     .join("");
 }
 
-function renderPersona(report) {
-  const { evaluation } = report;
-  const { primaryPersona, timePersona, activityPersona } = evaluation;
-  const consumerRead = buildPlainPersonaRead(evaluation);
+function renderPersonaFromProfile(userName, profile) {
+  stopOrbCycle();
 
-  coachTitle.textContent = `${report.userName} - ${primaryPersona.name}`;
-  coachSummary.textContent = evaluation.summary;
-  coachSessionCount.textContent = evaluation.reportCoverage?.summary || `${(evaluation.chartSessions || []).length || 1} session${((evaluation.chartSessions || []).length || 1) === 1 ? "" : "s"} visible in this read`;
-  signatureLabel.textContent = "Primary Persona";
-  signatureHeadline.textContent = primaryPersona.name;
-  signatureSupport.textContent = `${primaryPersona.summary} Strongest time read: ${timePersona?.label || "Mixed"}.`;
+  coachTitle.textContent = `${userName} — Whole-Student Profile`;
+  coachSummary.textContent = `Whole-student persona: ${profile.wholeUserPersona.name}. Playing persona: ${profile.playingPersona ? profile.playingPersona.name : "Pending"}. Based on ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"}.`;
+  coachSessionCount.textContent = `Complete student profile built from ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"} · Dominant time pattern: ${profile.dominantTimePattern}`;
+
+  signatureLabel.textContent = "Whole-Student Persona";
+  signatureHeadline.textContent = profile.wholeUserPersona.name;
+  signatureSupport.textContent = `${profile.wholeUserPersona.summary} Dominant time pattern: ${profile.dominantTimePattern}.`;
+
+  const activityPersonaRows = profile.activityPersonas.length
+    ? profile.activityPersonas
+        .map((ap) => `<li><strong>${ap.label}</strong>: ${ap.dominantPersona || "Pending"} (${ap.totalSessions} session${ap.totalSessions === 1 ? "" : "s"})</li>`)
+        .join("")
+    : "<li>No activity branches visible across the history yet.</li>";
 
   personaCard.innerHTML = `
     <div class="persona-heading">
       <div>
-        <strong>${primaryPersona.name}</strong>
-        <div class="persona-angle">${primaryPersona.angle}</div>
-        <div class="persona-note">${primaryPersona.summary}</div>
+        <strong>${profile.wholeUserPersona.name}</strong>
+        <div class="persona-angle">Whole-student read · ${profile.dominantTimePattern}</div>
+        <div class="persona-note">${profile.wholeUserPersona.summary}</div>
       </div>
-      <span class="persona-chip">${timePersona?.label || "Time persona"}</span>
+      <span class="persona-chip">${profile.dominantTimePattern}</span>
     </div>
-    <section class="persona-translation">
-      <p class="panel-label">What this means</p>
-      <h3>${consumerRead.title}</h3>
-      <p>${consumerRead.body}</p>
-      <p class="persona-translation-accent">${consumerRead.accent}</p>
-    </section>
     <div class="persona-columns">
       <section>
-        <h3>Why this persona</h3>
-        <ul>${primaryPersona.evidence.map((item) => `<li>${item}</li>`).join("")}</ul>
+        <h3>Whole-student persona</h3>
+        <p><strong>${profile.wholeUserPersona.name}</strong> — computed from ${profile.hasPlayingData ? "Playing sessions" : "all sessions"} across the full history.</p>
+        <ul>${profile.wholeUserPersona.evidence.map((item) => `<li>${item}</li>`).join("")}</ul>
       </section>
       <section>
-        <h3>Activity persona</h3>
-        <p><strong>${activityPersona?.label || "Pending"}</strong> ${activityPersona?.summary || "No activity persona could be formed yet."}</p>
-        <ul>${(activityPersona?.evidence || []).map((item) => `<li>${item}</li>`).join("")}</ul>
+        <h3>Playing persona</h3>
+        ${profile.playingPersona
+          ? `<p><strong>${profile.playingPersona.name}</strong></p><ul>${profile.playingPersona.evidence.map((item) => `<li>${item}</li>`).join("")}</ul>`
+          : `<p>No Playing sessions found in the history yet. Upload reports that include Playing activity to see the dedicated Playing persona.</p>`}
       </section>
       <section>
-        <h3>Time-based read</h3>
-        <p>${timePersona?.summary || "No specific time persona could be isolated from this report."}</p>
-        <ul>${(timePersona?.evidence || []).map((item) => `<li>${item}</li>`).join("")}</ul>
+        <h3>All activity personas</h3>
+        <ul>${activityPersonaRows}</ul>
       </section>
     </div>
   `;
 }
 
-function renderPeakFlow(report) {
-  const { peakFlow } = report.evaluation;
+function renderPeakFlowFromProfile(profile) {
+  if (!profile.bestPeakFlow) {
+    peakFlowPanel.innerHTML = '<div class="placeholder-card">No peak flow signal found across the history yet.</div>';
+    return;
+  }
 
   peakFlowPanel.innerHTML = `
     <div class="flow-topline">
       <div>
-        <div class="flow-badge">${peakFlow.timePersona}</div>
-        <h3>${peakFlow.sessionName}</h3>
-        <p>${peakFlow.reading}</p>
-        <div class="session-meta">${peakFlow.basis || "Detected flow basis"}</div>
+        <div class="flow-badge">${profile.dominantTimePattern}</div>
+        <h3>Best historical peak flow</h3>
+        <p>The strongest sustained flow window recorded across the complete history.</p>
+        <div class="session-meta">${profile.bestPeakFlow.sessionName || "Best sustained session"}</div>
       </div>
       <div>
-        <div class="flow-duration">${peakFlow.duration}</div>
-        <div class="session-meta">${peakFlow.window}</div>
+        <div class="flow-duration">${profile.bestPeakFlow.duration}</div>
+        <div class="session-meta">Best across ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"}</div>
       </div>
     </div>
   `;
 }
 
-function renderEngine(report) {
-  engineGrid.innerHTML = report.evaluation.performanceEngine
+function renderEngineFromProfile(profile) {
+  const maxVal = Math.max(profile.averageSpeed, profile.averageAgility, profile.averageEndurance, 1);
+  const items = [
+    {
+      id: "endurance",
+      label: "Average Endurance",
+      score: profile.averageEndurance,
+      width: `${Math.max(28, (profile.averageEndurance / maxVal) * 100)}%`,
+      reading: "Average endurance score across all reports in the full history."
+    },
+    {
+      id: "peak-endurance",
+      label: "Peak Endurance",
+      score: profile.peakEndurance,
+      width: "100%",
+      reading: "The highest endurance score recorded in any single report."
+    },
+    {
+      id: "speed",
+      label: "Average Speed",
+      score: profile.averageSpeed,
+      width: `${Math.max(28, (profile.averageSpeed / maxVal) * 100)}%`,
+      reading: "Average speed score across all reports in the full history."
+    },
+    {
+      id: "agility",
+      label: "Average Agility",
+      score: profile.averageAgility,
+      width: `${Math.max(28, (profile.averageAgility / maxVal) * 100)}%`,
+      reading: "Average agility score across all reports in the full history."
+    },
+    {
+      id: "peak-flow",
+      label: "Best Historical Peak Flow",
+      score: profile.bestPeakFlow ? profile.bestPeakFlow.duration : "Pending",
+      width: "100%",
+      reading: "The strongest peak flow duration detected across the complete report history."
+    }
+  ];
+
+  engineGrid.innerHTML = items
     .map(
       (metric) => `
-        <a class="engine-card clickable-card" href="${buildEvidenceLink(report.id, metric.id)}">
+        <article class="engine-card">
           <strong>${metric.label}: ${metric.score}</strong>
           <div class="engine-bar"><div class="engine-fill" style="width:${metric.width || "100%"}"></div></div>
           <div class="engine-caption">${metric.reading}</div>
-          <div class="engine-link">Open evidence</div>
-        </a>
+        </article>
       `
     )
     .join("");
 }
 
-function renderChartSessions(report) {
-  const sessions = report.evaluation.chartSessions || [];
-  if (!sessions.length) {
-    chartSessionGrid.innerHTML = '<article class="chart-session-card"><strong>No chart sessions parsed</strong><p>The uploaded report did not expose a chart structure cleanly enough yet.</p></article>';
+function renderChartSessionsFromReports(studentReports) {
+  const allSessions = studentReports.flatMap((r) => (r.evaluation?.chartSessions || []).map((s) => ({
+    ...s,
+    reportFileName: r.originalFileName
+  })));
+
+  if (!allSessions.length) {
+    chartSessionGrid.innerHTML = '<article class="chart-session-card"><strong>No chart sessions parsed</strong><p>No chart structures could be extracted from the uploaded reports.</p></article>';
     return;
   }
 
-  chartSessionGrid.innerHTML = sessions
+  chartSessionGrid.innerHTML = allSessions
     .map(
       (session) => `
         <article class="chart-session-card">
           <strong>${session.name}</strong>
-          <div class="session-meta">${session.time} · ${session.duration}</div>
+          <div class="session-meta">${session.time} · ${session.duration} · ${session.activityGroup}</div>
           <p>${session.timePersona} · Speed ${session.speed} · Agility ${session.agility} · Endurance ${session.endurance}</p>
+          <div class="session-meta">${session.reportFileName}</div>
         </article>
       `
     )
     .join("");
 }
 
-function renderModifiers(report) {
-  modifierGrid.innerHTML = report.evaluation.modifiers
-    .map(
-      (modifier) => `
-        <article class="modifier-card">
-          <strong>${modifier.label}: ${modifier.value}</strong>
-          <p>${modifier.note}</p>
-        </article>
-      `
-    )
-    .join("");
-}
+function renderActivityBranchesFromReports(studentReports) {
+  const allBranches = studentReports.flatMap((r) =>
+    (r.evaluation?.activityBranches || []).map((b) => ({ ...b, reportId: r.id, reportFileName: r.originalFileName }))
+  );
 
-function renderActivityBranches(report) {
-  const branches = report.evaluation.activityBranches || [];
-  if (!branches.length) {
-    activityBranchGrid.innerHTML = '<article class="chart-session-card"><strong>No activity branches yet</strong><p>The report did not expose enough named activities to compare.</p></article>';
+  if (!allBranches.length) {
+    activityBranchGrid.innerHTML = '<article class="chart-session-card"><strong>No activity branches yet</strong><p>The reports did not expose enough named activities to compare.</p></article>';
     return;
   }
 
-  activityBranchGrid.innerHTML = branches
+  activityBranchGrid.innerHTML = allBranches
     .map(
       (branch) => `
-        <a class="chart-session-card clickable-card" href="${buildActivityLink(report.id, branch.key)}">
+        <a class="chart-session-card clickable-card" href="${buildActivityLink(branch.reportId, branch.key)}">
           <strong>${branch.label}</strong>
           <div class="session-meta">${branch.sessions} session${branch.sessions === 1 ? "" : "s"} · ${branch.bestWindow}</div>
           <p>${branch.summary}</p>
+          <div class="session-meta">${branch.reportFileName}</div>
           <div class="engine-link">Open branch</div>
         </a>
       `
@@ -337,85 +342,96 @@ function renderActivityBranches(report) {
     .join("");
 }
 
-function renderFocusWellness(report) {
-  const impact = report.evaluation.focusWellnessImpact;
-  if (!impact) {
-    focusWellnessSummary.textContent = "No focus or wellness split could be read from this report yet.";
-    timeSpentGrid.innerHTML = "";
-    return;
-  }
-
-  focusWellnessSummary.textContent = impact.impactSummary;
-  timeSpentGrid.innerHTML = impact.timeSpent
-    .map(
-      (item) => `
-        <article class="modifier-card">
-          <strong>${item.label}: ${item.value}</strong>
-          <p>${item.note}</p>
-        </article>
-      `
-    )
-    .join("");
+function renderCoachingFromProfile(userName, profile) {
+  const enduranceLed = profile.averageEndurance >= profile.averageSpeed && profile.averageEndurance >= profile.averageAgility - 3;
+  coachPlanTitle.textContent = `Coach ${profile.wholeUserPersona.name}`;
+  coachPlanBody.textContent = `${profile.wholeUserPersona.name} is the whole-student identity for ${userName}. ${profile.playingPersona ? `Playing persona reads as ${profile.playingPersona.name}.` : ""} Dominant time pattern is ${profile.dominantTimePattern}. ${profile.bestPeakFlow ? `Best historical peak flow is ${profile.bestPeakFlow.duration}.` : ""}`;
+  coachingSteps.innerHTML = [
+    enduranceLed ? "Protect the longer, calmer flow windows first." : "Use the quicker windows intentionally rather than by default.",
+    `Bias coaching toward ${profile.dominantTimePattern.toLowerCase()} when you want the strongest version of this student.`,
+    profile.bestPeakFlow ? `Use ${profile.bestPeakFlow.duration} as the target duration when building repeatable sessions.` : "Track peak flow duration as more reports are uploaded."
+  ].map((item) => `<li>${item}</li>`).join("");
 }
 
-function renderCoaching(report) {
-  const { coaching } = report.evaluation;
-  coachPlanTitle.textContent = coaching.title;
-  coachPlanBody.textContent = coaching.body;
-  coachingSteps.innerHTML = coaching.steps.map((item) => `<li>${item}</li>`).join("");
-}
-
-function renderReport(report) {
-  if (!report) {
+async function renderStudentProfile(userName) {
+  if (!userName) {
     renderEmptyState();
     return;
   }
 
-  stopOrbCycle();
-  renderSummary(report);
-  renderPersona(report);
-  renderPeakFlow(report);
-  renderEngine(report);
-  renderChartSessions(report);
-  renderActivityBranches(report);
-  renderModifiers(report);
-  renderFocusWellness(report);
-  renderCoaching(report);
-  loadCoachResources(report.userName).catch((error) => {
-    setCoachResourceStatus(error.message, true);
-    renderCoachResources([]);
-  });
+  try {
+    const response = await apiFetch(`/api/students/${encodeURIComponent(userName)}/profile`);
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || "Could not load student profile.");
+    }
+
+    const profile = payload.profile;
+    const studentReports = reports.filter((r) => r.userName.toLowerCase() === userName.toLowerCase());
+
+    renderSummaryFromProfile(userName, profile);
+    renderPersonaFromProfile(userName, profile);
+    renderPeakFlowFromProfile(profile);
+    renderEngineFromProfile(profile);
+    renderChartSessionsFromReports(studentReports);
+    renderActivityBranchesFromReports(studentReports);
+    renderCoachingFromProfile(userName, profile);
+    loadCoachResources(userName).catch((error) => {
+      setCoachResourceStatus(error.message, true);
+      renderCoachResources([]);
+    });
+
+    modifierGrid.innerHTML = "";
+    focusWellnessSummary.textContent = "";
+    timeSpentGrid.innerHTML = "";
+  } catch (error) {
+    coachTitle.textContent = `Error loading profile for ${userName}`;
+    coachSummary.textContent = error.message;
+  }
 }
 
-function renderReportList() {
-  if (!reports.length) {
+function groupReportsByStudent(allReports) {
+  const studentMap = new Map();
+  for (const report of allReports) {
+    const name = report.userName;
+    if (!studentMap.has(name)) {
+      studentMap.set(name, []);
+    }
+    studentMap.get(name).push(report);
+  }
+  return studentMap;
+}
+
+function renderStudentList() {
+  const studentMap = groupReportsByStudent(reports);
+
+  if (!studentMap.size) {
     reportList.innerHTML =
-      '<article class="report-card"><h3>No reports yet</h3><div class="report-meta">Upload the first PDF to create a time-based persona evaluation.</div></article>';
+      '<article class="report-card"><h3>No students yet</h3><div class="report-meta">Upload the first PDF to create a student profile.</div></article>';
     return;
   }
 
-  reportList.innerHTML = reports
+  reportList.innerHTML = [...studentMap.entries()]
     .map(
-      (report) => `
-        <article class="report-card ${activeReportId === report.id ? "active" : ""}" data-report-id="${report.id}">
-          <h3>${report.userName}</h3>
-          <div class="report-meta">${report.evaluation.primaryPersona.name}</div>
-          <div class="report-meta">${report.evaluation.timePersona?.label || "Time persona pending"}</div>
-          <div class="report-meta">${report.evaluation.peakFlow?.duration || "No peak flow"}</div>
-          <a class="engine-link report-link" href="${buildStudentLink(report.userName, report.id)}">Open student page</a>
+      ([studentName, studentReports]) => `
+        <article class="report-card ${activeStudentName === studentName ? "active" : ""}" data-student-name="${studentName}">
+          <h3>${studentName}</h3>
+          <div class="report-meta">${studentReports.length} report${studentReports.length === 1 ? "" : "s"}</div>
+          <div class="report-meta">Whole-student profile available</div>
+          <a class="engine-link report-link" href="${buildStudentLink(studentName)}">Open student page</a>
         </article>
       `
     )
     .join("");
 
-  reportList.querySelectorAll("[data-report-id]").forEach((card) => {
+  reportList.querySelectorAll("[data-student-name]").forEach((card) => {
     card.querySelectorAll("a").forEach((link) => {
       link.addEventListener("click", (event) => event.stopPropagation());
     });
     card.addEventListener("click", () => {
-      activeReportId = card.dataset.reportId;
-      renderReportList();
-      renderReport(reports.find((item) => item.id === activeReportId));
+      activeStudentName = card.dataset.studentName;
+      renderStudentList();
+      renderStudentProfile(activeStudentName);
     });
   });
 }
@@ -429,9 +445,16 @@ async function loadReports() {
   }
   const payload = await response.json();
   reports = payload.reports || [];
-  activeReportId = reports[0]?.id || "";
-  renderReportList();
-  renderReport(reports[0] || null);
+
+  const firstStudent = reports[0]?.userName || "";
+  activeStudentName = firstStudent;
+  renderStudentList();
+
+  if (activeStudentName) {
+    await renderStudentProfile(activeStudentName);
+  } else {
+    renderEmptyState();
+  }
 }
 
 uploadForm.addEventListener("submit", async (event) => {
@@ -507,14 +530,13 @@ studentCredentialForm.addEventListener("submit", async (event) => {
 
 coachResourceForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const activeReport = reports.find((item) => item.id === activeReportId);
-  if (!activeReport) {
-    setCoachResourceStatus("Choose a student report first.", true);
+  if (!activeStudentName) {
+    setCoachResourceStatus("Choose a student first.", true);
     return;
   }
 
   setCoachResourceStatus("Assigning resource...");
-  const response = await apiFetch(`/api/admin/students/${encodeURIComponent(activeReport.userName)}/resources`, {
+  const response = await apiFetch(`/api/admin/students/${encodeURIComponent(activeStudentName)}/resources`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -540,12 +562,12 @@ coachResourceForm.addEventListener("submit", async (event) => {
 });
 
 const ORB_PERSONAS = [
-  { label: "Persona Detected", headline: "Speed Reactor", support: "Explosive activation and fast-start outputs define this pattern across sessions." },
-  { label: "Persona Detected", headline: "Endurance Anchor", support: "Steady, high-quality output sustained across long flow windows." },
-  { label: "Persona Detected", headline: "Adaptive Thinker", support: "Reads the environment mid-session and adjusts without losing momentum." },
-  { label: "Persona Detected", headline: "Flow Keeper", support: "Maintains a consistent rhythm with peak output concentrated in one window." },
-  { label: "Persona Detected", headline: "Agility Driver", support: "Rapid context-switching with short, high-intensity bursts across activities." },
-  { label: "Persona Detected", headline: "Deep Processor", support: "Long ramp-up before peak, but output quality exceeds average once settled." }
+  { label: "Whole-Student Persona", headline: "Speed Reactor", support: "Explosive activation and fast-start outputs define this pattern across sessions." },
+  { label: "Whole-Student Persona", headline: "Endurance Anchor", support: "Steady, high-quality output sustained across long flow windows." },
+  { label: "Whole-Student Persona", headline: "Adaptive Thinker", support: "Reads the environment mid-session and adjusts without losing momentum." },
+  { label: "Whole-Student Persona", headline: "Flow Keeper", support: "Maintains a consistent rhythm with peak output concentrated in one window." },
+  { label: "Whole-Student Persona", headline: "Agility Driver", support: "Rapid context-switching with short, high-intensity bursts across activities." },
+  { label: "Whole-Student Persona", headline: "Deep Processor", support: "Long ramp-up before peak, but output quality exceeds average once settled." }
 ];
 
 let orbCycleTimer = null;

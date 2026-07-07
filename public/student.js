@@ -90,22 +90,22 @@ function renderStudentResources() {
 function renderStudentEmptyState(message = "Choose a student to load their reports.") {
   studentSummaryStack.innerHTML = "";
   studentPersonaCard.innerHTML = `<div class="loading">${message}</div>`;
-  studentPeakFlowPanel.innerHTML = '<div class="loading">Peak flow will appear once a report is selected.</div>';
+  studentPeakFlowPanel.innerHTML = '<div class="loading">Complete student profile will appear once reports are uploaded.</div>';
   studentEngineGrid.innerHTML = "";
   studentActivityGrid.innerHTML = "";
   studentComparisonGrid.innerHTML = "";
   studentReportList.innerHTML = "";
   studentResourceList.innerHTML = "";
-  studentTitle.textContent = "Choose a report";
-  studentSummary.textContent = "This page stays scoped to your own reports only.";
+  studentTitle.textContent = "Your Reports";
+  studentSummary.textContent = "This page shows your complete student profile built from your full report history.";
   studentSessionCount.textContent = "";
-  studentActivitySummary.textContent = "Choose a report to compare flow and endurance against your own history.";
+  studentActivitySummary.textContent = "Upload reports to see your activity history and comparisons.";
   studentPlanTitle.textContent = "What to work on next";
   studentPlanBody.textContent = "Coach suggestions and assigned resources will appear here.";
   studentSteps.innerHTML = "";
   studentSignatureLabel.textContent = "Student Persona";
-  studentSignatureHeadline.textContent = "Choose a report";
-  studentSignatureSupport.textContent = "Upload or choose a report to see your strongest persona.";
+  studentSignatureHeadline.textContent = "Upload a report";
+  studentSignatureSupport.textContent = "Upload your reports to see your complete student profile.";
 }
 
 function renderStudentReportList() {
@@ -119,9 +119,9 @@ function renderStudentReportList() {
       (report) => `
         <article class="report-card ${report.id === activeStudentReportId ? "active" : ""}" data-student-report-id="${report.id}">
           <h3>${report.originalFileName}</h3>
-          <div class="report-meta">${report.evaluation.primaryPersona.name}</div>
-          <div class="report-meta">${report.evaluation.timePersona.label}</div>
-          <div class="report-meta">${report.evaluation.peakFlow.duration}</div>
+          <div class="report-meta">${new Date(report.createdAt).toLocaleDateString()}</div>
+          <div class="report-meta">Time pattern: ${report.evaluation.timePersona.label}</div>
+          <div class="report-meta">Flow: ${report.evaluation.peakFlow.duration}</div>
         </article>
       `
     )
@@ -135,21 +135,80 @@ function renderStudentReportList() {
       nextUrl.searchParams.set("report", activeStudentReportId);
       window.history.replaceState({}, "", nextUrl);
       renderStudentReportList();
-      renderStudentReport(studentReports.find((report) => report.id === activeStudentReportId));
     });
   });
 }
 
-function renderStudentSummary(report) {
-  const items = [
-    ["Persona Plus", report.evaluation.primaryPersona.name],
-    ["Thinking style", report.evaluation.activityPersona?.label || report.evaluation.primaryPersona.name],
-    ["Time flow", report.evaluation.timePersona.label],
-    ["Peak flow", report.evaluation.peakFlow.duration],
-    ["Endurance", report.evaluation.extractedSignals.endurance]
+function renderStudentComparison() {
+  const reportCount = studentReports.length;
+
+  studentActivitySummary.textContent =
+    reportCount > 1
+      ? `Your complete history covers ${reportCount} report${reportCount === 1 ? "" : "s"}. The comparison below reflects performance across the full history.`
+      : "Upload more reports to see a comparison across your own history.";
+
+  const flowValues = studentReports
+    .map((r) => {
+      const dur = r.evaluation?.peakFlow?.peakValue || r.evaluation?.peakFlow?.duration;
+      return dur ? parseDurationToSeconds(dur) : 0;
+    })
+    .filter((v) => v > 0);
+
+  const enduranceValues = studentReports
+    .map((r) => Number(r.evaluation?.extractedSignals?.endurance) || 0)
+    .filter((v) => v > 0);
+
+  const bestFlow = flowValues.length ? Math.max(...flowValues) : null;
+  const avgEndurance = enduranceValues.length
+    ? Math.round(enduranceValues.reduce((s, v) => s + v, 0) / enduranceValues.length * 10) / 10
+    : null;
+  const peakEndurance = enduranceValues.length ? Math.max(...enduranceValues) : null;
+
+  function formatSecs(secs) {
+    const m = Math.floor(secs / 60);
+    const s = String(secs % 60).padStart(2, "0");
+    return `${m}m ${s}s`;
+  }
+
+  studentComparisonGrid.innerHTML = `
+    <article class="summary-chip">
+      <span>Best historical peak flow</span>
+      <strong>${bestFlow ? formatSecs(bestFlow) : "Pending"}</strong>
+      <div class="report-meta">Across ${reportCount} report${reportCount === 1 ? "" : "s"}</div>
+    </article>
+    <article class="summary-chip">
+      <span>Average endurance</span>
+      <strong>${avgEndurance !== null ? avgEndurance : "Pending"}</strong>
+      <div class="report-meta">Across full history</div>
+    </article>
+    <article class="summary-chip">
+      <span>Peak endurance</span>
+      <strong>${peakEndurance !== null ? peakEndurance : "Pending"}</strong>
+      <div class="report-meta">Best single report</div>
+    </article>
+  `;
+}
+
+function renderStudentProfilePersona(profile) {
+  stopStudentOrbCycle();
+
+  studentTitle.textContent = `${activeStudentName} — Complete Student Profile`;
+  studentSummary.textContent = `Whole-student persona: ${profile.wholeUserPersona.name}. Built from ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"}.`;
+  studentSessionCount.textContent = `Full history · ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"} · Dominant time pattern: ${profile.dominantTimePattern}`;
+
+  studentSignatureLabel.textContent = "Whole-Student Persona";
+  studentSignatureHeadline.textContent = profile.wholeUserPersona.name;
+  studentSignatureSupport.textContent = `${profile.playingPersona ? profile.playingPersona.name : profile.wholeUserPersona.name} · ${profile.dominantTimePattern} · Best flow ${profile.bestPeakFlow ? profile.bestPeakFlow.duration : "pending"}`;
+
+  const summaryItems = [
+    ["Whole-student persona", profile.wholeUserPersona.name],
+    ["Playing persona", profile.playingPersona ? profile.playingPersona.name : "Pending"],
+    ["Dominant time pattern", profile.dominantTimePattern],
+    ["Best historical peak flow", profile.bestPeakFlow ? profile.bestPeakFlow.duration : "Pending"],
+    ["Total reports", String(profile.reportCount)]
   ];
 
-  studentSummaryStack.innerHTML = items
+  studentSummaryStack.innerHTML = summaryItems
     .map(
       ([label, value]) => `
         <article class="summary-chip">
@@ -159,93 +218,68 @@ function renderStudentSummary(report) {
       `
     )
     .join("");
-}
 
-function renderStudentComparison(report) {
-  const comparison = report.historyComparison || {};
-  const flowPercentile = comparison.flowPercentile ?? null;
-  const endurancePercentile = comparison.endurancePercentile ?? null;
-  const reportCount = comparison.reportCount || studentReports.length;
-  const flowBasis = report.evaluation.peakFlow.peakValue || report.evaluation.peakFlow.duration;
-
-  studentActivitySummary.textContent =
-    reportCount > 1
-      ? `This report is being compared against ${reportCount - 1} older report${reportCount - 1 === 1 ? "" : "s"} from your own history.`
-      : "Upload more reports to see a proper percentile comparison across your own history.";
-
-  studentComparisonGrid.innerHTML = `
-    <article class="summary-chip">
-      <span>Peak flow percentile</span>
-      <strong>${flowPercentile === null ? "Pending" : `${flowPercentile}th`}</strong>
-      <div class="report-meta">Current peak: ${flowBasis}</div>
-    </article>
-    <article class="summary-chip">
-      <span>Endurance percentile</span>
-      <strong>${endurancePercentile === null ? "Pending" : `${endurancePercentile}th`}</strong>
-      <div class="report-meta">Current endurance: ${report.evaluation.extractedSignals.endurance}</div>
-    </article>
-    <article class="summary-chip">
-      <span>Flow vs average</span>
-      <strong>${report.evaluation.metricEvidence["peak-flow"]?.averageValue || "No average found"}</strong>
-      <div class="report-meta">Peak signal is ${flowBasis}</div>
-    </article>
-  `;
-}
-
-function renderStudentReport(report) {
-  if (!report) {
-    renderStudentEmptyState();
-    return;
-  }
-
-  stopStudentOrbCycle();
-  const { evaluation } = report;
-  studentTitle.textContent = `${report.userName} · ${evaluation.primaryPersona.name}`;
-  studentSummary.textContent = evaluation.summary;
-  studentSessionCount.textContent = evaluation.reportCoverage?.summary || `${(evaluation.chartSessions || []).length || 1} visible session read`;
-  studentSignatureLabel.textContent = "Persona Plus";
-  studentSignatureHeadline.textContent = evaluation.primaryPersona.name;
-  studentSignatureSupport.textContent = `${evaluation.activityPersona?.label || evaluation.primaryPersona.name} · ${evaluation.timePersona.label} · Peak flow ${evaluation.peakFlow.duration}`;
-  studentPlanTitle.textContent = evaluation.coaching.title;
-  studentPlanBody.textContent = evaluation.coaching.body;
-  studentSteps.innerHTML = evaluation.coaching.steps.map((item) => `<li>${item}</li>`).join("");
-
-  renderStudentSummary(report);
-  renderStudentComparison(report);
+  const activityPersonaRows = profile.activityPersonas.length
+    ? profile.activityPersonas
+        .map((ap) => `<li><strong>${ap.label}</strong>: ${ap.dominantPersona || "Pending"} (${ap.totalSessions} session${ap.totalSessions === 1 ? "" : "s"})</li>`)
+        .join("")
+    : "<li>No activity branches visible across the history yet.</li>";
 
   studentPersonaCard.innerHTML = `
     <div class="persona-heading">
       <div>
-        <strong>${evaluation.primaryPersona.name}</strong>
-        <div class="persona-angle">${evaluation.activityPersona?.label || "Thinking read"} · ${evaluation.timePersona.label}</div>
-        <div class="persona-note">${evaluation.primaryPersona.summary}</div>
+        <strong>${profile.wholeUserPersona.name}</strong>
+        <div class="persona-angle">Complete student profile · ${profile.dominantTimePattern}</div>
+        <div class="persona-note">${profile.wholeUserPersona.summary}</div>
       </div>
-      <span class="persona-chip">${evaluation.timePersona.label}</span>
+      <span class="persona-chip">${profile.dominantTimePattern}</span>
     </div>
     <div class="persona-columns persona-columns-triple">
       <section>
-        <h3>Intuitive / analytical / balanced</h3>
-        <p><strong>${evaluation.primaryPersona.name}</strong> is the top read from this report.</p>
-        <ul>${evaluation.primaryPersona.evidence.map((item) => `<li>${item}</li>`).join("")}</ul>
+        <h3>Whole-student persona</h3>
+        <p><strong>${profile.wholeUserPersona.name}</strong> — computed from ${profile.hasPlayingData ? "Playing sessions" : "all sessions"} across your full history.</p>
+        <ul>${profile.wholeUserPersona.evidence.map((item) => `<li>${item}</li>`).join("")}</ul>
       </section>
       <section>
-        <h3>Time-based flow</h3>
-        <p>${evaluation.timePersona.summary}</p>
-        <ul>${evaluation.timePersona.evidence.map((item) => `<li>${item}</li>`).join("")}</ul>
+        <h3>Playing persona</h3>
+        ${profile.playingPersona
+          ? `<p><strong>${profile.playingPersona.name}</strong></p><ul>${profile.playingPersona.evidence.map((item) => `<li>${item}</li>`).join("")}</ul>`
+          : `<p>No Playing sessions found in your history yet. Playing sessions will generate a dedicated Playing persona.</p>`}
       </section>
       <section>
-        <h3>Endurance and flow</h3>
-        <p>Endurance is ${evaluation.extractedSignals.endurance} and peak flow is ${evaluation.peakFlow.duration} in this report.</p>
-        <ul>
-          <li>${evaluation.metricEvidence.endurance.explanation}</li>
-          <li>${evaluation.peakFlow.reading}</li>
-          <li>${evaluation.metricEvidence["peak-flow"]?.comparedTo || "No average comparison found."}</li>
-        </ul>
+        <h3>All activity personas</h3>
+        <ul>${activityPersonaRows}</ul>
       </section>
     </div>
   `;
 
-  studentEngineGrid.innerHTML = evaluation.performanceEngine
+  const maxVal = Math.max(profile.averageSpeed, profile.averageAgility, profile.averageEndurance, 1);
+  studentEngineGrid.innerHTML = [
+    {
+      label: "Average Endurance",
+      score: profile.averageEndurance,
+      width: `${Math.max(28, (profile.averageEndurance / maxVal) * 100)}%`,
+      reading: "Average endurance across your full report history."
+    },
+    {
+      label: "Peak Endurance",
+      score: profile.peakEndurance,
+      width: "100%",
+      reading: "The highest endurance score in any single report."
+    },
+    {
+      label: "Average Speed",
+      score: profile.averageSpeed,
+      width: `${Math.max(28, (profile.averageSpeed / maxVal) * 100)}%`,
+      reading: "Average speed across your full report history."
+    },
+    {
+      label: "Average Agility",
+      score: profile.averageAgility,
+      width: `${Math.max(28, (profile.averageAgility / maxVal) * 100)}%`,
+      reading: "Average agility across your full report history."
+    }
+  ]
     .map(
       (metric) => `
         <article class="engine-card">
@@ -257,32 +291,76 @@ function renderStudentReport(report) {
     )
     .join("");
 
-  studentPeakFlowPanel.innerHTML = `
-    <div class="flow-topline">
-      <div>
-        <div class="flow-badge">${evaluation.timePersona.label}</div>
-        <h3>${evaluation.peakFlow.sessionName}</h3>
-        <p>${evaluation.peakFlow.reading}</p>
+  if (profile.bestPeakFlow) {
+    studentPeakFlowPanel.innerHTML = `
+      <div class="flow-topline">
+        <div>
+          <div class="flow-badge">${profile.dominantTimePattern}</div>
+          <h3>Best historical peak flow</h3>
+          <p>The strongest sustained flow window recorded across your complete history.</p>
+          <div class="session-meta">${profile.bestPeakFlow.sessionName || "Best sustained session"}</div>
+        </div>
+        <div>
+          <div class="flow-duration">${profile.bestPeakFlow.duration}</div>
+          <div class="session-meta">Across ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"}</div>
+        </div>
       </div>
-      <div>
-        <div class="flow-duration">${evaluation.peakFlow.duration}</div>
-        <div class="session-meta">${evaluation.peakFlow.window}</div>
-      </div>
-    </div>
-  `;
+    `;
+  } else {
+    studentPeakFlowPanel.innerHTML = '<div class="loading">No peak flow signal found yet. Upload more reports.</div>';
+  }
 
-  studentActivityGrid.innerHTML = (evaluation.activityBranches || [])
+  const enduranceLed = profile.averageEndurance >= profile.averageSpeed && profile.averageEndurance >= profile.averageAgility - 3;
+  studentPlanTitle.textContent = `Coach ${profile.wholeUserPersona.name}`;
+  studentPlanBody.textContent = `${profile.wholeUserPersona.name} is your whole-student identity. ${profile.playingPersona ? `Your Playing persona reads as ${profile.playingPersona.name}.` : ""} Dominant time pattern: ${profile.dominantTimePattern}. ${profile.bestPeakFlow ? `Best historical peak flow: ${profile.bestPeakFlow.duration}.` : ""}`;
+  studentSteps.innerHTML = [
+    enduranceLed ? "Protect your longer, calmer flow windows first." : "Use your quicker windows intentionally rather than by default.",
+    `Your strongest sessions tend to happen during ${profile.dominantTimePattern.toLowerCase()}.`,
+    profile.bestPeakFlow ? `Use ${profile.bestPeakFlow.duration} as your target duration when building repeatable sessions.` : "Track your peak flow duration as more reports are uploaded."
+  ].map((item) => `<li>${item}</li>`).join("");
+}
+
+function renderStudentActivityBranches() {
+  const allBranches = studentReports.flatMap((r) =>
+    (r.evaluation?.activityBranches || []).map((b) => ({ ...b, reportId: r.id, reportFileName: r.originalFileName }))
+  );
+
+  if (!allBranches.length) {
+    studentActivityGrid.innerHTML = '<article class="chart-session-card"><strong>No activity branches yet</strong><p>No named activities could be extracted from the reports.</p></article>';
+    return;
+  }
+
+  studentActivityGrid.innerHTML = allBranches
     .map(
       (branch) => `
-        <a class="chart-session-card clickable-card" href="${studentActivityLink(report.id, branch.key)}">
+        <a class="chart-session-card clickable-card" href="${studentActivityLink(branch.reportId, branch.key)}">
           <strong>${branch.label}</strong>
           <div class="session-meta">${branch.persona?.name || "Activity persona"} · ${branch.bestWindow}</div>
           <p>${branch.summary}</p>
+          <div class="session-meta">${branch.reportFileName}</div>
           <div class="engine-link">Open branch</div>
         </a>
       `
     )
     .join("");
+}
+
+async function loadWholeStudentProfile(userName) {
+  const response = await apiFetch(`/api/students/${encodeURIComponent(userName)}/profile`, { role: studentRole });
+  if (response.status === 401 || response.status === 403) {
+    studentAppShell.hidden = true;
+    studentTabShell.hidden = true;
+    if (!isAdminViewing) clearStudentSession();
+    window.location.href = isAdminViewing ? "/" : "/login.html";
+    return null;
+  }
+
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.error || "Could not load student profile.");
+  }
+
+  return payload.profile;
 }
 
 async function loadStudentResources(userName) {
@@ -307,12 +385,12 @@ async function loadStudentResources(userName) {
 async function loadStudentReports(userName) {
   const trimmed = (userName || "").trim();
   if (!trimmed) {
-    renderStudentEmptyState("Login to load only your own reports.");
+    renderStudentEmptyState("Login to load your complete student profile.");
     return;
   }
 
   activeStudentName = trimmed;
-  setStudentStatus("Loading student reports...");
+  setStudentStatus("Loading student profile...");
   const response = await apiFetch(`/api/students/${encodeURIComponent(trimmed)}/reports`, { role: studentRole });
   if (response.status === 401 || response.status === 403) {
     studentAppShell.hidden = true;
@@ -334,8 +412,24 @@ async function loadStudentReports(userName) {
     "";
 
   renderStudentReportList();
-  renderStudentReport(studentReports.find((report) => report.id === activeStudentReportId) || null);
-  setStudentStatus(studentReports.length ? `Loaded ${studentReports.length} report${studentReports.length === 1 ? "" : "s"} for ${trimmed}.` : `No reports found for ${trimmed}.`, !studentReports.length);
+  renderStudentComparison();
+  renderStudentActivityBranches();
+
+  if (studentReports.length) {
+    const profile = await loadWholeStudentProfile(trimmed);
+    if (profile) {
+      renderStudentProfilePersona(profile);
+    }
+  } else {
+    renderStudentEmptyState("Upload your first report to see your complete student profile.");
+  }
+
+  setStudentStatus(
+    studentReports.length
+      ? `Complete profile loaded — ${studentReports.length} report${studentReports.length === 1 ? "" : "s"} for ${trimmed}.`
+      : `No reports found for ${trimmed}. Upload your first report to start.`,
+    !studentReports.length
+  );
 }
 
 studentTabButtons.forEach((button) => {
@@ -392,12 +486,12 @@ if (isAdminViewing) {
 }
 
 const STUDENT_ORB_PERSONAS = [
-  { label: "Persona Detected", headline: "Speed Reactor", support: "Explosive activation and fast-start outputs define this pattern across sessions." },
-  { label: "Persona Detected", headline: "Endurance Anchor", support: "Steady, high-quality output sustained across long flow windows." },
-  { label: "Persona Detected", headline: "Adaptive Thinker", support: "Reads the environment mid-session and adjusts without losing momentum." },
-  { label: "Persona Detected", headline: "Flow Keeper", support: "Maintains a consistent rhythm with peak output in one concentrated window." },
-  { label: "Persona Detected", headline: "Agility Driver", support: "Rapid context-switching with short, high-intensity bursts across activities." },
-  { label: "Persona Detected", headline: "Deep Processor", support: "Long ramp-up before peak, but output quality exceeds average once settled." }
+  { label: "Whole-Student Persona", headline: "Speed Reactor", support: "Explosive activation and fast-start outputs define this pattern across sessions." },
+  { label: "Whole-Student Persona", headline: "Endurance Anchor", support: "Steady, high-quality output sustained across long flow windows." },
+  { label: "Whole-Student Persona", headline: "Adaptive Thinker", support: "Reads the environment mid-session and adjusts without losing momentum." },
+  { label: "Whole-Student Persona", headline: "Flow Keeper", support: "Maintains a consistent rhythm with peak output in one concentrated window." },
+  { label: "Whole-Student Persona", headline: "Agility Driver", support: "Rapid context-switching with short, high-intensity bursts across activities." },
+  { label: "Whole-Student Persona", headline: "Deep Processor", support: "Long ramp-up before peak, but output quality exceeds average once settled." }
 ];
 
 let studentOrbTimer = null;

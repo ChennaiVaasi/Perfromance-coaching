@@ -73,7 +73,7 @@ function extractReportCoverage(reportText, chartSessions) {
 }
 
 function parseDurationToSeconds(duration) {
-  const match = duration.match(/(?:(\d+)h )?(\d+)m (\d+)s/);
+  const match = String(duration || "").match(/(?:(\d+)h )?(\d+)m (\d+)s/);
   if (!match) return 0;
   const hours = Number(match[1] || 0);
   const minutes = Number(match[2] || 0);
@@ -103,7 +103,7 @@ function bucketTimeLabel(timeString) {
   if (meridiem === "AM" && hour === 12) hour = 0;
 
   if (hour < 11) return "Morning Settler";
-  if (hour < 16) return "Day Carrier";
+  if (hour < 16) return "Midday Driver";
   return "Evening Spark";
 }
 
@@ -305,7 +305,7 @@ function inferPatternPersona(text, metrics) {
   }
 
   return {
-    name: "Day Carrier",
+    name: "Midday Driver",
     angle: "Workload window",
     summary: "Carries the bulk of the day and adapts well when the middle of the day gets heavy.",
     evidence: [
@@ -320,6 +320,7 @@ function inferPrimaryPersona(text, metrics, chartSessions = []) {
   const patternPersona = inferPatternPersona(text, metrics);
   const agilityLead = metrics.agility - metrics.speed;
   const speedLead = metrics.speed - metrics.agility;
+  const diff = Math.abs(metrics.speed - metrics.agility);
   const lower = text.toLowerCase();
 
   const aggregateAgilitySignal =
@@ -339,12 +340,12 @@ function inferPrimaryPersona(text, metrics, chartSessions = []) {
 
   const consistentAgility =
     comparisonCount >= 3
-      ? agilityWins / comparisonCount >= 0.65 && agilityLead >= 2
+      ? agilityWins / comparisonCount >= 0.60 && agilityLead >= 2
       : aggregateAgilitySignal && agilityLead >= 3;
 
   const consistentSpeed =
     comparisonCount >= 3
-      ? speedWins / comparisonCount >= 0.65 && speedLead >= 2
+      ? speedWins / comparisonCount >= 0.60 && speedLead >= 2
       : aggregateSpeedSignal && speedLead >= 3;
 
   const hasMixedWins = comparisonCount >= 2 && agilityWins >= 1 && speedWins >= 1;
@@ -395,7 +396,7 @@ function inferPrimaryPersona(text, metrics, chartSessions = []) {
       ? `${classifyActivity(bestSpeedSession.name)} pushes more analytical speed, while ${classifyActivity(bestAgilitySession.name)} brings out more intuitive agility.`
       : timeShift
         ? `${bestSpeedSession.timePersona} looks more analytical, while ${bestAgilitySession.timePersona} looks more intuitive.`
-        : `The report keeps showing both speed-led and agility-led moments rather than one stable thinker style.`;
+        : `Both speed-led and agility-led sessions appear across the visible evidence rather than one stable thinker style.`;
 
     return {
       name: "Dual-mode",
@@ -404,6 +405,31 @@ function inferPrimaryPersona(text, metrics, chartSessions = []) {
       evidence: [
         contextLine,
         `The report contains meaningful visible sessions on both sides of the speed-versus-agility split (${speedWins} speed-led, ${agilityWins} agility-led).`,
+        patternPersona.summary,
+        ...patternPersona.evidence.slice(0, 1)
+      ]
+    };
+  }
+
+  if (diff > 10) {
+    if (metrics.agility > metrics.speed) {
+      return {
+        name: "Intuitive-leaning",
+        angle: patternPersona.name,
+        summary: `Agility clearly leads speed, making the profile lean intuitive even without consistent session-level evidence. ${patternPersona.name} is the deeper performance style underneath this read.`,
+        evidence: [
+          `Agility (${metrics.agility}) leads speed (${metrics.speed}) by more than 10 points, which is too large a gap to call balanced.`,
+          patternPersona.summary,
+          ...patternPersona.evidence.slice(0, 1)
+        ]
+      };
+    }
+    return {
+      name: "Analytical-leaning",
+      angle: patternPersona.name,
+      summary: `Speed clearly leads agility, making the profile lean analytical even without consistent session-level evidence. ${patternPersona.name} is the deeper performance style underneath this read.`,
+      evidence: [
+        `Speed (${metrics.speed}) leads agility (${metrics.agility}) by more than 10 points, which is too large a gap to call balanced.`,
         patternPersona.summary,
         ...patternPersona.evidence.slice(0, 1)
       ]
@@ -428,7 +454,7 @@ function inferTimePersona(reportText, chartSessions, primaryPersona) {
     return {
       label: bestFlowSession.timePersona,
       window: bestFlowSession.time,
-      summary: `${bestFlowSession.name} suggests ${bestFlowSession.timePersona.toLowerCase()} is where the user's strongest flow signature appears.`,
+      summary: `${bestFlowSession.name} suggests ${bestFlowSession.timePersona.toLowerCase()} is where the strongest flow signature appears.`,
       evidence: [
         `${bestFlowSession.name} had the strongest combined chart profile.`,
         `The session happened at ${bestFlowSession.time}.`,
@@ -444,7 +470,7 @@ function inferTimePersona(reportText, chartSessions, primaryPersona) {
     return {
       label,
       window: startTime,
-      summary: `The session started at ${startTime}, so the strongest time-based read from this report is ${label.toLowerCase()}.`,
+      summary: `The session began at ${startTime}, pointing toward ${label.toLowerCase()} as the time-based read for this report.`,
       evidence: [
         `The report explicitly states the session began at ${startTime}.`,
         "There is not enough chart structure to override the session-time reading.",
@@ -467,7 +493,7 @@ function inferTimePersona(reportText, chartSessions, primaryPersona) {
   }
 
   return {
-    label: "Day Carrier",
+    label: "Midday Driver",
     window: "Mixed-day load",
     summary: "The report supports a middle-of-day workload persona more than a highly isolated time spike.",
     evidence: [
@@ -529,10 +555,20 @@ function inferPrimaryActivity(text, chartSessions) {
 
 function classifyActivity(activityName) {
   const lower = activityName.toLowerCase();
+
   if (
     lower.includes("game") ||
+    lower.includes("classical game") ||
+    lower.includes("rapid game") ||
+    lower.includes("blitz") ||
     lower.includes("match") ||
-    lower.includes("vs ") ||
+    lower.includes("pregame") ||
+    lower.includes("before game") ||
+    lower.includes("position to play") ||
+    lower.includes("ptp") ||
+    lower.includes(" vs ") ||
+    lower.includes(" vs\t") ||
+    lower.startsWith("vs ") ||
     lower.includes("against ")
   ) {
     return "Playing";
@@ -540,15 +576,44 @@ function classifyActivity(activityName) {
 
   if (
     lower.includes("puzzle") ||
-    lower.includes("solve") ||
     lower.includes("solving") ||
-    lower.includes("polgar") ||
+    lower.includes("solve") ||
     lower.includes("calculation") ||
     lower.includes("tactics") ||
     lower.includes("endgame") ||
-    lower.includes("analysis")
+    lower.includes("analysis") ||
+    lower.includes("polgar")
   ) {
     return "Solving";
+  }
+
+  if (
+    lower.includes("meditation") ||
+    lower.includes("relaxation") ||
+    lower.includes("wellness") ||
+    lower.includes("walk") ||
+    lower.includes("recovery") ||
+    lower.includes("reset") ||
+    lower.includes("breathing") ||
+    lower.includes("mindfulness")
+  ) {
+    return "Wellness";
+  }
+
+  if (
+    lower.includes("training") ||
+    lower.includes("revise") ||
+    lower.includes("endings") ||
+    lower.includes("opening") ||
+    lower.includes("book") ||
+    lower.includes("drill") ||
+    lower.includes("on the board") ||
+    lower.includes("observing thoughts") ||
+    lower.includes("absorbing thoughts") ||
+    lower.includes("lecture") ||
+    lower.includes("study")
+  ) {
+    return "Training";
   }
 
   return "Other";
@@ -677,15 +742,16 @@ function buildMetricEvidence(reportText, chartSessions, metrics, peakFlow, timeP
 function buildActivityBranches(reportText, chartSessions, metricEvidence, timePersona) {
   if (!chartSessions.length) {
     const activity = inferPrimaryActivity(reportText, chartSessions);
+    const branch = classifyActivity(activity);
     const fallbackPersona = inferPrimaryPersona(reportText, { speed: 44, agility: 46, endurance: 48 }, []);
     return [
       {
-        key: classifyActivity(activity).toLowerCase().replace(/\s+/g, "-"),
-        label: classifyActivity(activity),
+        key: branch.toLowerCase().replace(/\s+/g, "-"),
+        label: branch,
         activity,
         sessions: 1,
         bestWindow: timePersona.window,
-        summary: `${activity} is the only clearly named activity in this report, so the branch is being built from the single-session evidence.`,
+        summary: `${branch} is the only clearly visible branch in this report, so this persona read is being built from the single-session evidence around ${activity}.`,
         persona: {
           name: fallbackPersona.name,
           angle: fallbackPersona.angle,
@@ -783,6 +849,8 @@ function buildActivityPersona(reportText, activityBranches, chartSessions, metri
   const branchDriverLines = {
     Playing: "Playing is where competitive execution is showing up most clearly.",
     Solving: "Solving is where the cleanest cognitive signature is showing up most clearly.",
+    Training: "Training is where the preparation work is most visible.",
+    Wellness: "Wellness sessions are visible and may be stabilising the entry quality.",
     Other: "Other work is carrying a meaningful part of the visible pattern."
   };
 
@@ -901,8 +969,9 @@ function inferFocusWellnessImpact(text) {
       ? `The user spent ${focusPercent}% of tracked time in focus work and ${wellnessPercent}% in wellness work. Focus appears to build the main persona, while wellness likely improves entry quality and recovery.`
       : deepWorkPercent !== null && recoveryPercent !== null
         ? `The session spent ${deepWorkPercent}% in deep work and ${recoveryPercent}% in recovery. That suggests a performance pattern built on entering flow, resetting, and re-entering rather than one perfectly flat session.`
-      : "The time-spent mix is only partially visible, so the impact read is more directional than precise.";
+        : "The time-spent mix is only partially visible, so the impact read is more directional than precise.";
 
+  void lower;
   return {
     focusPercent,
     wellnessPercent,
@@ -923,9 +992,6 @@ function buildPeakFlow(chartSessions, timePersona, metrics) {
       reading: `${bestFlowSession.duration} looks like the strongest sustained flow window from the chart, driven by ${bestFlowSession.name}.`
     };
   }
-
-  const maxDeepWorkMatch = timePersona.summary.match(/nothing-will-match/); // placeholder to keep structure stable
-  void maxDeepWorkMatch;
 
   return {
     duration: metrics.endurance >= metrics.speed ? "60m+" : "30-45m",
@@ -990,6 +1056,179 @@ function withIndefiniteArticle(value) {
   return /^[aeiou]/i.test(value) ? `an ${value}` : `a ${value}`;
 }
 
+function inferPersonaLabelFromSessions(sessions, avgMetrics) {
+  const meaningfulComparisons = sessions.filter((s) => Math.abs(s.agility - s.speed) >= 3);
+  const agilityWins = meaningfulComparisons.filter((s) => s.agility > s.speed).length;
+  const speedWins = meaningfulComparisons.filter((s) => s.speed > s.agility).length;
+  const comparisonCount = meaningfulComparisons.length;
+
+  const agilityLead = avgMetrics.agility - avgMetrics.speed;
+  const speedLead = avgMetrics.speed - avgMetrics.agility;
+  const diff = Math.abs(avgMetrics.speed - avgMetrics.agility);
+
+  const consistentAgility = comparisonCount >= 3
+    ? agilityWins / comparisonCount >= 0.60 && agilityLead >= 2
+    : agilityLead >= 3;
+
+  const consistentSpeed = comparisonCount >= 3
+    ? speedWins / comparisonCount >= 0.60 && speedLead >= 2
+    : speedLead >= 3;
+
+  const hasMixedWins = comparisonCount >= 2 && agilityWins >= 1 && speedWins >= 1;
+
+  if (consistentAgility) {
+    return {
+      name: "Intuitive-leaning",
+      summary: "Leans on feel, adjustment, and live pattern recognition more than straight-line activation.",
+      evidence: [
+        comparisonCount >= 3
+          ? `Agility outruns speed in ${agilityWins} of ${comparisonCount} meaningful Playing sessions across the full history.`
+          : `Average agility (${avgMetrics.agility.toFixed(1)}) leads average speed (${avgMetrics.speed.toFixed(1)}) across the student's Playing history.`
+      ]
+    };
+  }
+
+  if (consistentSpeed) {
+    return {
+      name: "Analytical-leaning",
+      summary: "Leans on direct processing, sharper activation, and clearer task entry more than live improvisation.",
+      evidence: [
+        comparisonCount >= 3
+          ? `Speed outruns agility in ${speedWins} of ${comparisonCount} meaningful Playing sessions across the full history.`
+          : `Average speed (${avgMetrics.speed.toFixed(1)}) leads average agility (${avgMetrics.agility.toFixed(1)}) across the student's Playing history.`
+      ]
+    };
+  }
+
+  if (hasMixedWins) {
+    return {
+      name: "Dual-mode",
+      summary: "Shows different strengths in different contexts instead of one fixed cognitive mode.",
+      evidence: [
+        `Both speed-led and agility-led Playing sessions appear across the history (${speedWins} speed-led, ${agilityWins} agility-led).`
+      ]
+    };
+  }
+
+  if (diff > 10) {
+    if (avgMetrics.agility > avgMetrics.speed) {
+      return {
+        name: "Intuitive-leaning",
+        summary: "Agility clearly leads speed by a wide margin across the full history.",
+        evidence: [
+          `Average agility (${avgMetrics.agility.toFixed(1)}) leads average speed (${avgMetrics.speed.toFixed(1)}) by more than 10 points — too large a gap to call balanced.`
+        ]
+      };
+    }
+    return {
+      name: "Analytical-leaning",
+      summary: "Speed clearly leads agility by a wide margin across the full history.",
+      evidence: [
+        `Average speed (${avgMetrics.speed.toFixed(1)}) leads average agility (${avgMetrics.agility.toFixed(1)}) by more than 10 points — too large a gap to call balanced.`
+      ]
+    };
+  }
+
+  return {
+    name: "Balanced Thinker",
+    summary: "Uses analysis and intuition in a fairly even mix across the full history.",
+    evidence: [
+      `Average speed (${avgMetrics.speed.toFixed(1)}) and agility (${avgMetrics.agility.toFixed(1)}) are close across the student's history.`
+    ]
+  };
+}
+
+function computeWholeStudentProfile(reports) {
+  if (!reports || !reports.length) return null;
+
+  const allSessions = reports.flatMap((r) => r.evaluation?.chartSessions || []);
+  const playingSessions = allSessions.filter((s) => s.activityGroup === "Playing");
+
+  const speedValues = reports.map((r) => Number(r.evaluation?.extractedSignals?.speed) || 0).filter((v) => v > 0);
+  const agilityValues = reports.map((r) => Number(r.evaluation?.extractedSignals?.agility) || 0).filter((v) => v > 0);
+  const enduranceValues = reports.map((r) => Number(r.evaluation?.extractedSignals?.endurance) || 0).filter((v) => v > 0);
+
+  const avgSpeed = speedValues.length ? speedValues.reduce((s, v) => s + v, 0) / speedValues.length : 44;
+  const avgAgility = agilityValues.length ? agilityValues.reduce((s, v) => s + v, 0) / agilityValues.length : 46;
+  const avgEndurance = enduranceValues.length ? enduranceValues.reduce((s, v) => s + v, 0) / enduranceValues.length : 48;
+  const peakEndurance = enduranceValues.length ? Math.max(...enduranceValues) : 48;
+  const avgMetrics = { speed: avgSpeed, agility: avgAgility, endurance: avgEndurance };
+
+  const sessionsForWholeUser = playingSessions.length > 0 ? playingSessions : allSessions;
+  const wholeUserPersona = inferPersonaLabelFromSessions(sessionsForWholeUser, avgMetrics);
+  const playingPersona = playingSessions.length > 0
+    ? inferPersonaLabelFromSessions(playingSessions, avgMetrics)
+    : null;
+
+  const timeLabels = allSessions.map((s) => s.timePersona).filter(Boolean);
+  const timeCounts = {};
+  for (const label of timeLabels) timeCounts[label] = (timeCounts[label] || 0) + 1;
+  const dominantTimePattern = timeLabels.length
+    ? Object.entries(timeCounts).sort((a, b) => b[1] - a[1])[0][0]
+    : (reports[0]?.evaluation?.timePersona?.label || "Mixed");
+
+  const dominantFragmentationPattern = (() => {
+    const fragPatterns = reports
+      .map((r) => {
+        const sessions = r.evaluation?.chartSessions || [];
+        if (!sessions.length) return null;
+        const avg = sessions.reduce((s, c) => s + c.durationSeconds, 0) / sessions.length;
+        if (avg < 600) return "Short sessions";
+        if (avg > 2400) return "Long sessions";
+        return "Medium sessions";
+      })
+      .filter(Boolean);
+    if (!fragPatterns.length) return "Mixed";
+    const counts = {};
+    for (const p of fragPatterns) counts[p] = (counts[p] || 0) + 1;
+    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  })();
+
+  const peakFlowCandidates = reports
+    .map((r) => {
+      const dur = r.evaluation?.peakFlow?.peakValue || r.evaluation?.peakFlow?.duration;
+      if (!dur) return null;
+      const secs = parseDurationToSeconds(dur);
+      return secs > 0 ? { seconds: secs, duration: dur, sessionName: r.evaluation?.peakFlow?.sessionName } : null;
+    })
+    .filter(Boolean);
+  const bestPeakFlow = peakFlowCandidates.length
+    ? peakFlowCandidates.sort((a, b) => b.seconds - a.seconds)[0]
+    : null;
+
+  const allBranches = reports.flatMap((r) => r.evaluation?.activityBranches || []);
+  const branchByLabel = {};
+  for (const branch of allBranches) {
+    if (!branchByLabel[branch.label]) branchByLabel[branch.label] = [];
+    branchByLabel[branch.label].push(branch);
+  }
+  const activityPersonas = Object.entries(branchByLabel).map(([label, branches]) => {
+    const totalSessions = branches.reduce((s, b) => s + (b.sessions || 0), 0);
+    const personaNames = branches.map((b) => b.persona?.name).filter(Boolean);
+    const dominantPersona = personaNames.length
+      ? personaNames.sort(
+          (a, b) => personaNames.filter((p) => p === b).length - personaNames.filter((p) => p === a).length
+        )[0]
+      : null;
+    return { label, totalSessions, dominantPersona };
+  });
+
+  return {
+    wholeUserPersona,
+    playingPersona,
+    dominantTimePattern,
+    dominantFragmentationPattern,
+    bestPeakFlow,
+    averageSpeed: Math.round(avgSpeed * 10) / 10,
+    averageAgility: Math.round(avgAgility * 10) / 10,
+    averageEndurance: Math.round(avgEndurance * 10) / 10,
+    peakEndurance,
+    activityPersonas,
+    reportCount: reports.length,
+    hasPlayingData: playingSessions.length > 0
+  };
+}
+
 function evaluatePersonaFromReport({ userName, reportText, ocrText = "", originalFileName }) {
   const cleanedReportText = normaliseReportText(reportText);
   const metrics = buildMetricSummary(cleanedReportText);
@@ -1007,7 +1246,7 @@ function evaluatePersonaFromReport({ userName, reportText, ocrText = "", origina
           timePersona: timePersona.label,
           window: timePersona.window,
           basis: "Max uninterrupted deep work bout",
-          reading: `The clearest peak-flow signal in this report is the max uninterrupted deep work bout of ${Math.floor(Number(maxDeepWorkMatch[1]) / 60)}m ${String(Number(maxDeepWorkMatch[1]) % 60).padStart(2, "0")}s.`
+          reading: `The best deep work bout recorded is ${Math.floor(Number(maxDeepWorkMatch[1]) / 60)}m ${String(Number(maxDeepWorkMatch[1]) % 60).padStart(2, "0")}s.`
         }
       : buildPeakFlow(chartSessions, timePersona, metrics);
   const modifiers = inferActivityModifiers(cleanedReportText);
@@ -1021,7 +1260,7 @@ function evaluatePersonaFromReport({ userName, reportText, ocrText = "", origina
   return {
     userName,
     reportTitle: originalFileName,
-    summary: `${userName}'s report suggests ${withIndefiniteArticle(primaryPersona.name)} core, ${withIndefiniteArticle(timePersona.label)} time persona, and a peak flow duration around ${peakFlow.duration}.`,
+    summary: `${userName}'s profile shows ${withIndefiniteArticle(primaryPersona.name)} whole-student core, ${withIndefiniteArticle(timePersona.label)} dominant time pattern, and a peak flow duration around ${peakFlow.duration}.`,
     primaryPersona,
     timePersona,
     peakFlow,
@@ -1042,4 +1281,4 @@ function evaluatePersonaFromReport({ userName, reportText, ocrText = "", origina
   };
 }
 
-module.exports = { evaluatePersonaFromReport };
+module.exports = { evaluatePersonaFromReport, computeWholeStudentProfile };
