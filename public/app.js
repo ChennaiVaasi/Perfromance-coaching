@@ -41,6 +41,14 @@ const coachResourceList = document.getElementById("coach-resource-list");
 let reports = [];
 let activeStudentName = "";
 
+function timeWindow(pattern) {
+  if (!pattern) return pattern;
+  if (pattern === "Morning Settler") return "Before 11 AM";
+  if (pattern === "Midday Driver") return "11 AM – 4 PM";
+  if (pattern === "Evening Spark") return "4 PM onwards";
+  return pattern;
+}
+
 function setStatus(message, isError = false) {
   formStatus.textContent = message;
   formStatus.style.color = isError ? "#ff9c9c" : "";
@@ -154,7 +162,7 @@ function renderSummaryFromProfile(userName, profile) {
   const items = [
     ["Whole-student persona", profile.wholeUserPersona.name],
     ["Playing persona", profile.playingPersona ? profile.playingPersona.name : "Insufficient Playing data"],
-    ["Dominant time pattern", profile.dominantTimePattern],
+    ["Dominant time pattern", timeWindow(profile.dominantTimePattern)],
     ["Best historical peak flow", profile.bestPeakFlow ? profile.bestPeakFlow.duration : "Pending"],
     ["Report count", String(profile.reportCount)]
   ];
@@ -176,11 +184,11 @@ function renderPersonaFromProfile(userName, profile) {
 
   coachTitle.textContent = `${userName} — Whole-Student Profile`;
   coachSummary.textContent = `Whole-student persona: ${profile.wholeUserPersona.name}. Playing persona: ${profile.playingPersona ? profile.playingPersona.name : "Pending"}. Based on ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"}.`;
-  coachSessionCount.textContent = `Complete student profile built from ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"} · Dominant time pattern: ${profile.dominantTimePattern}`;
+  coachSessionCount.textContent = `Complete student profile built from ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"} · Dominant time pattern: ${timeWindow(profile.dominantTimePattern)}`;
 
   signatureLabel.textContent = "Whole-Student Persona";
   signatureHeadline.textContent = profile.wholeUserPersona.name;
-  signatureSupport.textContent = `${profile.wholeUserPersona.summary} Dominant time pattern: ${profile.dominantTimePattern}.`;
+  signatureSupport.textContent = `${profile.wholeUserPersona.summary} Dominant time pattern: ${timeWindow(profile.dominantTimePattern)}.`;
 
   const activityPersonaRows = profile.activityPersonas.length
     ? profile.activityPersonas
@@ -192,10 +200,10 @@ function renderPersonaFromProfile(userName, profile) {
     <div class="persona-heading">
       <div>
         <strong>${profile.wholeUserPersona.name}</strong>
-        <div class="persona-angle">Whole-student read · ${profile.dominantTimePattern}</div>
+        <div class="persona-angle">Whole-student read · ${timeWindow(profile.dominantTimePattern)}</div>
         <div class="persona-note">${profile.wholeUserPersona.summary}</div>
       </div>
-      <span class="persona-chip">${profile.dominantTimePattern}</span>
+      <span class="persona-chip">${timeWindow(profile.dominantTimePattern)}</span>
     </div>
     <div class="persona-columns">
       <section>
@@ -226,7 +234,7 @@ function renderPeakFlowFromProfile(profile) {
   peakFlowPanel.innerHTML = `
     <div class="flow-topline">
       <div>
-        <div class="flow-badge">${profile.dominantTimePattern}</div>
+        <div class="flow-badge">${timeWindow(profile.dominantTimePattern)}</div>
         <h3>Best historical peak flow</h3>
         <p>The strongest sustained flow window recorded across the complete history.</p>
         <div class="session-meta">${profile.bestPeakFlow.sessionName || "Best sustained session"}</div>
@@ -345,10 +353,10 @@ function renderActivityBranchesFromReports(studentReports) {
 function renderCoachingFromProfile(userName, profile) {
   const enduranceLed = profile.averageEndurance >= profile.averageSpeed && profile.averageEndurance >= profile.averageAgility - 3;
   coachPlanTitle.textContent = `Coach ${profile.wholeUserPersona.name}`;
-  coachPlanBody.textContent = `${profile.wholeUserPersona.name} is the whole-student identity for ${userName}. ${profile.playingPersona ? `Playing persona reads as ${profile.playingPersona.name}.` : ""} Dominant time pattern is ${profile.dominantTimePattern}. ${profile.bestPeakFlow ? `Best historical peak flow is ${profile.bestPeakFlow.duration}.` : ""}`;
+  coachPlanBody.textContent = `${profile.wholeUserPersona.name} is the whole-student identity for ${userName}. ${profile.playingPersona ? `Playing persona reads as ${profile.playingPersona.name}.` : ""} Dominant time pattern is ${timeWindow(profile.dominantTimePattern)}. ${profile.bestPeakFlow ? `Best historical peak flow is ${profile.bestPeakFlow.duration}.` : ""}`;
   coachingSteps.innerHTML = [
     enduranceLed ? "Protect the longer, calmer flow windows first." : "Use the quicker windows intentionally rather than by default.",
-    `Bias coaching toward ${profile.dominantTimePattern.toLowerCase()} when you want the strongest version of this student.`,
+    `Bias coaching toward ${timeWindow(profile.dominantTimePattern)} when you want the strongest version of this student.`,
     profile.bestPeakFlow ? `Use ${profile.bestPeakFlow.duration} as the target duration when building repeatable sessions.` : "Track peak flow duration as more reports are uploaded."
   ].map((item) => `<li>${item}</li>`).join("");
 }
