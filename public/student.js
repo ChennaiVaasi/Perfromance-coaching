@@ -386,24 +386,46 @@ function renderStudentActivityBranches() {
   const token = isAdminViewing ? getAdminToken() : getStudentToken();
 
   studentActivityGrid.innerHTML = allBranches
-    .map(
-      (branch) => {
-        const pdfLink = branch.pdfUrl
-          ? `<a class="pdf-report-link" href="/api/reports/${encodeURIComponent(branch.reportId)}/pdf?token=${encodeURIComponent(token)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📄 View PDF report</a>`
-          : "";
-        return `
-        <a class="chart-session-card clickable-card" href="${studentActivityLink(branch.reportId, branch.key)}">
-          <strong>${branch.label}</strong>
-          <div class="session-meta">${branch.persona?.name || "Activity persona"} · ${branch.bestWindow}</div>
-          <p>${branch.summary}</p>
-          <div class="session-meta">${branch.reportFileName}</div>
-          ${pdfLink}
-          <div class="engine-link">Open branch</div>
-        </a>
+    .map((branch) => {
+      const activityUrl = studentActivityLink(branch.reportId, branch.key);
+      const pdfLink = branch.pdfUrl
+        ? `<a class="branch-action branch-action-secondary" href="/api/reports/${encodeURIComponent(branch.reportId)}/pdf?token=${encodeURIComponent(token)}" target="_blank" rel="noopener">View PDF report</a>`
+        : "";
+
+      return `
+        <article class="activity-branch-card" data-activity-url="${activityUrl}" tabindex="0" role="link" aria-label="Open ${branch.label} branch">
+          <div class="branch-card-body">
+            <div class="branch-card-topline">
+              <span class="branch-card-kicker">${branch.persona?.name || "Activity persona"}</span>
+              <span class="branch-card-time">${branch.sessions} session${branch.sessions === 1 ? "" : "s"} · ${branch.bestWindow}</span>
+            </div>
+            <h3>${branch.label}</h3>
+            <p>${branch.summary}</p>
+            <div class="branch-file" title="${branch.reportFileName}">${branch.reportFileName}</div>
+          </div>
+          <div class="branch-actions">
+            ${pdfLink}
+            <a class="branch-action branch-action-primary" href="${activityUrl}">Open Branch</a>
+          </div>
+        </article>
       `;
-      }
-    )
+    })
     .join("");
+
+  studentActivityGrid.querySelectorAll(".activity-branch-card").forEach((card) => {
+    card.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", (event) => event.stopPropagation());
+    });
+    card.addEventListener("click", () => {
+      window.location.href = card.dataset.activityUrl;
+    });
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        window.location.href = card.dataset.activityUrl;
+      }
+    });
+  });
 }
 
 async function loadWholeStudentProfile(userName) {
