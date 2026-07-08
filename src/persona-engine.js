@@ -23,8 +23,13 @@ function buildMetricSummary(reportText) {
   const cognitiveAgilityMatch = reportText.match(/(\d+(?:\.\d+)?)\s+Cognitive Agility/i);
   const cognitiveEnduranceMatch = reportText.match(/(\d+(?:\.\d+)?)\s+Cognitive Endurance/i);
 
+  const analyticalMatch = reportText.match(/(\d+(?:\.\d+)?)\s+ANALYTICAL SCORE/i);
+  const intuitiveMatch = reportText.match(/(\d+(?:\.\d+)?)\s+INTUITIVE SCORE/i);
+  const enduranceScoreMatch = reportText.match(/(\d+(?:\.\d+)?)\s+ENDURANCE SCORE/i);
+
   const enduranceCandidates = extractNumbers(reportText, [
     /(\d+(?:\.\d+)?)\s+Cognitive Endurance/gi,
+    /(\d+(?:\.\d+)?)\s+ENDURANCE SCORE/gi,
     /best endurance[^0-9]{0,20}(\d+(?:\.\d+)?)/gi,
     /strongest stamina[^0-9]{0,20}(\d+(?:\.\d+)?)/gi,
     /endurance[^0-9]{0,20}(\d+(?:\.\d+)?)/gi,
@@ -34,23 +39,48 @@ function buildMetricSummary(reportText) {
 
   const speedCandidates = extractNumbers(reportText, [
     /(\d+(?:\.\d+)?)\s+Cognitive Speed/gi,
+    /(\d+(?:\.\d+)?)\s+ANALYTICAL SCORE/gi,
     /fastest session at[^0-9]{0,20}(\d+(?:\.\d+)?)/gi,
     /top speed peaked at[^0-9]{0,20}(\d+(?:\.\d+)?)/gi,
-    /speed peaked at[^0-9]{0,20}(\d+(?:\.\d+)?)/gi,
-    /speed[^0-9]{0,20}(\d+(?:\.\d+)?)/gi
+    /speed peaked at[^0-9]{0,20}(\d+(?:\.\d+)?)/gi
   ]);
 
   const agilityCandidates = extractNumbers(reportText, [
     /(\d+(?:\.\d+)?)\s+Cognitive Agility/gi,
+    /(\d+(?:\.\d+)?)\s+INTUITIVE SCORE/gi,
     /highest agility[^0-9]{0,20}(\d+(?:\.\d+)?)/gi,
     /best agility[^0-9]{0,20}(\d+(?:\.\d+)?)/gi,
     /agility[^0-9]{0,20}(\d+(?:\.\d+)?)/gi
   ]);
 
+  const resolvedEndurance = cognitiveEnduranceMatch
+    ? Number(cognitiveEnduranceMatch[1])
+    : enduranceScoreMatch
+      ? Number(enduranceScoreMatch[1])
+      : enduranceCandidates.length
+        ? Math.max(...enduranceCandidates)
+        : 48;
+
+  const resolvedSpeed = cognitiveSpeedMatch
+    ? Number(cognitiveSpeedMatch[1])
+    : analyticalMatch
+      ? Number(analyticalMatch[1])
+      : speedCandidates.length
+        ? Math.max(...speedCandidates)
+        : 44;
+
+  const resolvedAgility = cognitiveAgilityMatch
+    ? Number(cognitiveAgilityMatch[1])
+    : intuitiveMatch
+      ? Number(intuitiveMatch[1])
+      : agilityCandidates.length
+        ? Math.max(...agilityCandidates)
+        : 46;
+
   return {
-    endurance: cognitiveEnduranceMatch ? Number(cognitiveEnduranceMatch[1]) : enduranceCandidates.length ? Math.max(...enduranceCandidates) : 48,
-    speed: cognitiveSpeedMatch ? Number(cognitiveSpeedMatch[1]) : speedCandidates.length ? Math.max(...speedCandidates) : 44,
-    agility: cognitiveAgilityMatch ? Number(cognitiveAgilityMatch[1]) : agilityCandidates.length ? Math.max(...agilityCandidates) : 46
+    endurance: resolvedEndurance,
+    speed: resolvedSpeed,
+    agility: resolvedAgility
   };
 }
 
