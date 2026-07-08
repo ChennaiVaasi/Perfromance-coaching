@@ -322,7 +322,7 @@ function renderStudentProfilePersona(profile) {
 
 function renderStudentActivityBranches() {
   const allBranches = studentReports.flatMap((r) =>
-    (r.evaluation?.activityBranches || []).map((b) => ({ ...b, reportId: r.id, reportFileName: r.originalFileName }))
+    (r.evaluation?.activityBranches || []).map((b) => ({ ...b, reportId: r.id, reportFileName: r.originalFileName, pdfUrl: r.pdfUrl }))
   );
 
   if (!allBranches.length) {
@@ -330,17 +330,25 @@ function renderStudentActivityBranches() {
     return;
   }
 
+  const token = isAdminViewing ? getAdminToken() : getStudentToken();
+
   studentActivityGrid.innerHTML = allBranches
     .map(
-      (branch) => `
+      (branch) => {
+        const pdfLink = branch.pdfUrl
+          ? `<a class="pdf-report-link" href="/api/reports/${encodeURIComponent(branch.reportId)}/pdf?token=${encodeURIComponent(token)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📄 View PDF report</a>`
+          : "";
+        return `
         <a class="chart-session-card clickable-card" href="${studentActivityLink(branch.reportId, branch.key)}">
           <strong>${branch.label}</strong>
           <div class="session-meta">${branch.persona?.name || "Activity persona"} · ${branch.bestWindow}</div>
           <p>${branch.summary}</p>
           <div class="session-meta">${branch.reportFileName}</div>
+          ${pdfLink}
           <div class="engine-link">Open branch</div>
         </a>
-      `
+      `;
+      }
     )
     .join("");
 }

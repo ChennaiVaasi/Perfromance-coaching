@@ -549,6 +549,27 @@ body {
   letter-spacing: 0.12em;
 }
 
+.pdf-report-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--teal);
+  font-size: 0.78rem;
+  text-decoration: none;
+  width: fit-content;
+  transition: background 0.15s;
+}
+
+.pdf-report-link:hover {
+  background: rgba(255,255,255,0.14);
+  color: var(--teal);
+}
+
 .report-link {
   display: inline-flex;
 }
