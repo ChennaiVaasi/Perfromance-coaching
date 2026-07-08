@@ -243,15 +243,11 @@ function renderStudentComparison() {
 }
 
 function renderStudentProfilePersona(profile) {
-  stopStudentOrbCycle();
+  startRealStudentOrbCycle(profile);
 
   studentTitle.textContent = `${activeStudentName} — Complete Student Profile`;
   studentSummary.textContent = `Whole-student persona: ${profile.wholeUserPersona.name}. Built from ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"}.`;
   studentSessionCount.textContent = `Full history · ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"} · Dominant time pattern: ${timeWindow(profile.dominantTimePattern)}`;
-
-  studentSignatureLabel.textContent = "Whole-Student Persona";
-  studentSignatureHeadline.textContent = profile.wholeUserPersona.name;
-  studentSignatureSupport.textContent = `${profile.playingPersona ? profile.playingPersona.name : profile.wholeUserPersona.name} · ${timeWindow(profile.dominantTimePattern)} · Best flow ${profile.bestPeakFlow ? profile.bestPeakFlow.duration : "pending"}`;
 
   const summaryItems = [
     ["Whole-student persona", profile.wholeUserPersona.name],
@@ -594,6 +590,41 @@ function stopStudentOrbCycle() {
   }
   studentOrbCycling = false;
   [studentSignatureLabel, studentSignatureHeadline, studentSignatureSupport].forEach((el) => { el.style.opacity = "1"; });
+}
+
+function startRealStudentOrbCycle(profile) {
+  stopStudentOrbCycle();
+  const slots = [
+    {
+      label: "Whole-Student Persona",
+      headline: profile.wholeUserPersona.name,
+      support: profile.wholeUserPersona.summary
+    }
+  ];
+  if (profile.playingPersona) {
+    slots.push({
+      label: "Playing Persona",
+      headline: profile.playingPersona.name,
+      support: profile.playingPersona.summary
+    });
+  }
+  slots.push({
+    label: "Dominant Time Pattern",
+    headline: timeWindow(profile.dominantTimePattern),
+    support: "Strongest sessions cluster in this window."
+  });
+  if (slots.length === 1) {
+    fadeStudentOrbTo(slots[0].label, slots[0].headline, slots[0].support);
+    return;
+  }
+  studentOrbCycling = true;
+  studentOrbIndex = 0;
+  fadeStudentOrbTo(slots[0].label, slots[0].headline, slots[0].support);
+  studentOrbTimer = setInterval(() => {
+    studentOrbIndex = (studentOrbIndex + 1) % slots.length;
+    const p = slots[studentOrbIndex];
+    fadeStudentOrbTo(p.label, p.headline, p.support);
+  }, 3200);
 }
 
 if (activeStudentName) {

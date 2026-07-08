@@ -180,15 +180,11 @@ function renderSummaryFromProfile(userName, profile) {
 }
 
 function renderPersonaFromProfile(userName, profile) {
-  stopOrbCycle();
+  startRealOrbCycle(profile);
 
   coachTitle.textContent = `${userName} — Whole-Student Profile`;
   coachSummary.textContent = `Whole-student persona: ${profile.wholeUserPersona.name}. Playing persona: ${profile.playingPersona ? profile.playingPersona.name : "Pending"}. Based on ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"}.`;
   coachSessionCount.textContent = `Complete student profile built from ${profile.reportCount} report${profile.reportCount === 1 ? "" : "s"} · Dominant time pattern: ${timeWindow(profile.dominantTimePattern)}`;
-
-  signatureLabel.textContent = "Whole-Student Persona";
-  signatureHeadline.textContent = profile.wholeUserPersona.name;
-  signatureSupport.textContent = `${profile.wholeUserPersona.summary} Dominant time pattern: ${timeWindow(profile.dominantTimePattern)}.`;
 
   const activityPersonaRows = profile.activityPersonas.length
     ? profile.activityPersonas
@@ -617,6 +613,41 @@ function stopOrbCycle() {
   orbCycling = false;
   const els = [signatureLabel, signatureHeadline, signatureSupport];
   els.forEach((el) => { el.style.opacity = "1"; });
+}
+
+function startRealOrbCycle(profile) {
+  stopOrbCycle();
+  const slots = [
+    {
+      label: "Whole-Student Persona",
+      headline: profile.wholeUserPersona.name,
+      support: profile.wholeUserPersona.summary
+    }
+  ];
+  if (profile.playingPersona) {
+    slots.push({
+      label: "Playing Persona",
+      headline: profile.playingPersona.name,
+      support: profile.playingPersona.summary
+    });
+  }
+  slots.push({
+    label: "Dominant Time Pattern",
+    headline: timeWindow(profile.dominantTimePattern),
+    support: "Strongest sessions cluster in this window."
+  });
+  if (slots.length === 1) {
+    fadeOrbTo(slots[0].label, slots[0].headline, slots[0].support);
+    return;
+  }
+  orbCycling = true;
+  orbCycleIndex = 0;
+  fadeOrbTo(slots[0].label, slots[0].headline, slots[0].support);
+  orbCycleTimer = setInterval(() => {
+    orbCycleIndex = (orbCycleIndex + 1) % slots.length;
+    const p = slots[orbCycleIndex];
+    fadeOrbTo(p.label, p.headline, p.support);
+  }, 3200);
 }
 
 loadReports().catch((error) => {
