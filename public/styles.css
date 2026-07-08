@@ -948,6 +948,14 @@ body {
 .branch-card-time {
   flex-shrink: 0;
   text-align: right;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: rgba(93, 226, 211, 0.08);
+  border: 1px solid rgba(93, 226, 211, 0.2);
+  border-radius: 6px;
+  padding: 3px 8px;
 }
 
 .activity-branch-card h3 {
