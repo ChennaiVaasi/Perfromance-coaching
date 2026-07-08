@@ -554,24 +554,75 @@ body {
   align-items: center;
   gap: 4px;
   margin-top: 8px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.15);
   color: var(--teal);
   font-size: 0.78rem;
   text-decoration: none;
-  width: fit-content;
-  transition: background 0.15s;
+  opacity: 0.8;
+  transition: opacity 0.15s;
 }
 
 .pdf-report-link:hover {
-  background: rgba(255,255,255,0.14);
+  opacity: 1;
   color: var(--teal);
+  text-decoration: underline;
 }
 
 .report-link {
   display: inline-flex;
+}
+
+.summary-chip.peak-flow {
+  border-color: rgba(255, 179, 71, 0.35);
+  background: rgba(255, 179, 71, 0.07);
+}
+
+.summary-chip.peak-flow strong {
+  color: var(--amber);
+}
+
+.summary-chip.peak-flow span {
+  color: var(--amber);
+  opacity: 0.7;
+}
+
+.summary-chip.peak-endurance {
+  border-color: rgba(143, 134, 255, 0.35);
+  background: rgba(143, 134, 255, 0.07);
+}
+
+.summary-chip.peak-endurance strong {
+  color: var(--violet);
+}
+
+.summary-chip.peak-endurance span {
+  color: var(--violet);
+  opacity: 0.7;
+}
+
+.engine-card.peak-flow {
+  border-color: rgba(255, 179, 71, 0.35);
+  background: rgba(255, 179, 71, 0.05);
+}
+
+.engine-card.peak-flow strong {
+  color: var(--amber);
+}
+
+.engine-card.peak-flow .engine-fill {
+  background: linear-gradient(135deg, var(--amber), #ff8c00);
+}
+
+.engine-card.peak-endurance {
+  border-color: rgba(143, 134, 255, 0.35);
+  background: rgba(143, 134, 255, 0.05);
+}
+
+.engine-card.peak-endurance strong {
+  color: var(--violet);
+}
+
+.engine-card.peak-endurance .engine-fill {
+  background: linear-gradient(135deg, var(--violet), #c27aff);
 }
 
 .chart-session-grid {
@@ -669,6 +720,81 @@ body {
 
 .student-report-list {
   grid-template-columns: 1fr;
+}
+
+.report-rank-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.rank-row {
+  display: grid;
+  gap: 4px;
+}
+
+.rank-labels {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rank-name {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  flex: 1;
+}
+
+.rank-badge {
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+
+.rank-pct {
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-width: 36px;
+  text-align: right;
+}
+
+.rank-bar-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.rank-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.peak-flow-bar {
+  background: linear-gradient(90deg, var(--amber), #ff9500);
+}
+
+.peak-endurance-bar {
+  background: linear-gradient(90deg, var(--violet), #c27aff);
+}
+
+.rank-value {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.peak-flow-text {
+  color: var(--amber);
+}
+
+.peak-endurance-text {
+  color: var(--violet);
 }
 
 .persona-columns-triple {

@@ -114,17 +114,62 @@ function renderStudentReportList() {
     return;
   }
 
+  const reportMetrics = studentReports.map((r) => ({
+    id: r.id,
+    flowSecs: parseDurationToSeconds(r.evaluation?.peakFlow?.peakValue || r.evaluation?.peakFlow?.duration),
+    endurance: Number(r.evaluation?.extractedSignals?.endurance) || 0,
+    flowLabel: r.evaluation?.peakFlow?.duration || "—"
+  }));
+
+  const peakFlow = Math.max(...reportMetrics.map((m) => m.flowSecs), 1);
+  const peakEndurance = Math.max(...reportMetrics.map((m) => m.endurance), 1);
+
+  const sortedByFlow = [...reportMetrics].sort((a, b) => b.flowSecs - a.flowSecs);
+  const sortedByEndurance = [...reportMetrics].sort((a, b) => b.endurance - a.endurance);
+
+  const flowRankMap = Object.fromEntries(sortedByFlow.map((m, i) => [m.id, i + 1]));
+  const enduranceRankMap = Object.fromEntries(sortedByEndurance.map((m, i) => [m.id, i + 1]));
+
   studentReportList.innerHTML = studentReports
-    .map(
-      (report) => `
+    .map((report) => {
+      const m = reportMetrics.find((x) => x.id === report.id);
+      const flowPct = peakFlow > 0 ? Math.round((m.flowSecs / peakFlow) * 100) : 0;
+      const endPct = peakEndurance > 0 ? Math.round((m.endurance / peakEndurance) * 100) : 0;
+      const flowRank = flowRankMap[report.id];
+      const endRank = enduranceRankMap[report.id];
+      const total = studentReports.length;
+
+      return `
         <article class="report-card ${report.id === activeStudentReportId ? "active" : ""}" data-student-report-id="${report.id}">
           <h3>${report.originalFileName}</h3>
-          <div class="report-meta">${new Date(report.createdAt).toLocaleDateString()}</div>
-          <div class="report-meta">Time pattern: ${report.evaluation.timePersona.label}</div>
-          <div class="report-meta">Flow: ${report.evaluation.peakFlow.duration}</div>
+          <div class="report-meta">${new Date(report.createdAt).toLocaleDateString()} · ${report.evaluation.timePersona.label}</div>
+          <div class="report-rank-grid">
+            <div class="rank-row">
+              <div class="rank-labels">
+                <span class="rank-name peak-flow-text">Peak Flow</span>
+                <span class="rank-badge">#${flowRank} of ${total}</span>
+                <span class="rank-pct peak-flow-text">${flowPct}%</span>
+              </div>
+              <div class="rank-bar-track">
+                <div class="rank-bar-fill peak-flow-bar" style="width:${flowPct}%"></div>
+              </div>
+              <div class="rank-value">${m.flowLabel}</div>
+            </div>
+            <div class="rank-row">
+              <div class="rank-labels">
+                <span class="rank-name peak-endurance-text">Endurance</span>
+                <span class="rank-badge">#${endRank} of ${total}</span>
+                <span class="rank-pct peak-endurance-text">${endPct}%</span>
+              </div>
+              <div class="rank-bar-track">
+                <div class="rank-bar-fill peak-endurance-bar" style="width:${endPct}%"></div>
+              </div>
+              <div class="rank-value">${m.endurance || "—"}</div>
+            </div>
+          </div>
         </article>
-      `
-    )
+      `;
+    })
     .join("");
 
   studentReportList.querySelectorAll("[data-student-report-id]").forEach((card) => {
@@ -171,7 +216,7 @@ function renderStudentComparison() {
   }
 
   studentComparisonGrid.innerHTML = `
-    <article class="summary-chip">
+    <article class="summary-chip peak-flow">
       <span>Best historical peak flow</span>
       <strong>${bestFlow ? formatSecs(bestFlow) : "Pending"}</strong>
       <div class="report-meta">Across ${reportCount} report${reportCount === 1 ? "" : "s"}</div>
@@ -181,7 +226,7 @@ function renderStudentComparison() {
       <strong>${avgEndurance !== null ? avgEndurance : "Pending"}</strong>
       <div class="report-meta">Across full history</div>
     </article>
-    <article class="summary-chip">
+    <article class="summary-chip peak-endurance">
       <span>Peak endurance</span>
       <strong>${peakEndurance !== null ? peakEndurance : "Pending"}</strong>
       <div class="report-meta">Best single report</div>
@@ -259,30 +304,34 @@ function renderStudentProfilePersona(profile) {
       label: "Average Endurance",
       score: profile.averageEndurance,
       width: `${Math.max(28, (profile.averageEndurance / maxVal) * 100)}%`,
-      reading: "Average endurance across your full report history."
+      reading: "Average endurance across your full report history.",
+      cls: ""
     },
     {
       label: "Peak Endurance",
       score: profile.peakEndurance,
       width: "100%",
-      reading: "The highest endurance score in any single report."
+      reading: "The highest endurance score in any single report.",
+      cls: "peak-endurance"
     },
     {
       label: "Average Speed",
       score: profile.averageSpeed,
       width: `${Math.max(28, (profile.averageSpeed / maxVal) * 100)}%`,
-      reading: "Average speed across your full report history."
+      reading: "Average speed across your full report history.",
+      cls: ""
     },
     {
       label: "Average Agility",
       score: profile.averageAgility,
       width: `${Math.max(28, (profile.averageAgility / maxVal) * 100)}%`,
-      reading: "Average agility across your full report history."
+      reading: "Average agility across your full report history.",
+      cls: ""
     }
   ]
     .map(
       (metric) => `
-        <article class="engine-card">
+        <article class="engine-card${metric.cls ? ` ${metric.cls}` : ""}">
           <strong>${metric.label}: ${metric.score}</strong>
           <div class="engine-bar"><div class="engine-fill" style="width:${metric.width || "100%"}"></div></div>
           <div class="engine-caption">${metric.reading}</div>
